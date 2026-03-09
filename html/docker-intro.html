@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introduction to Docker</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===========================================
+       CSS CUSTOM PROPERTIES — TERMINAL GREEN THEME
+       Modify these to change the whole look
+    =========================================== */
+    :root {
+      --bg:           #050f07;
+      --surface:      rgba(0, 255, 65, 0.04);
+      --green:        #00ff41;
+      --green-dim:    rgba(0, 255, 65, 0.45);
+      --green-muted:  rgba(0, 255, 65, 0.18);
+      --green-faint:  rgba(0, 255, 65, 0.06);
+      --text:         #c8f7d0;
+      --muted:        #3d6b44;
+      --blue:         #6dd6ff;
+      --yellow:       #ffd36d;
+      --white:        #f0fff4;
+
+      /* Per-slide accent color — overridden per slide below */
+      --accent:       #00ff41;
+      --accent-dim:   rgba(0, 255, 65, 0.45);
+      --accent-muted: rgba(0, 255, 65, 0.18);
+      --accent-faint: rgba(0, 255, 65, 0.06);
+
+      /* Typography — all clamp() for responsive scaling */
+      --font-mono:    'JetBrains Mono', monospace;
+      --font-sans:    'DM Sans', sans-serif;
+      --title-size:   clamp(2.2rem, 5.5vw, 4.8rem);
+      --h2-size:      clamp(1.3rem, 2.8vw, 2.2rem);
+      --h3-size:      clamp(1rem, 2vw, 1.5rem);
+      --body-size:    clamp(0.75rem, 1.3vw, 1rem);
+      --code-size:    clamp(0.65rem, 1.05vw, 0.875rem);
+      --small-size:   clamp(0.58rem, 0.9vw, 0.75rem);
+
+      /* Spacing — clamp() for responsive scaling */
+      --slide-pad:    clamp(2rem, 5vw, 5rem);
+      --gap:          clamp(0.6rem, 1.2vw, 1.2rem);
+      --statusbar-h:  clamp(22px, 3.2vh, 28px);
+    }
+
+    /* ===========================================
+       RESET & BASE
+    =========================================== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      height: 100%;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      height: 100%;
+      font-family: var(--font-mono);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* CRT scanline overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px, transparent 2px,
+        rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px
+      );
+      pointer-events: none;
+      z-index: 9500;
+    }
+
+    /* Ambient glow from bottom */
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -150px; left: 50%;
+      transform: translateX(-50%);
+      width: 90%; height: 400px;
+      background: radial-gradient(ellipse, rgba(0, 255, 65, 0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ===========================================
+       PROGRESS BAR
+    =========================================== */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      width: 0%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      z-index: 9999;
+      transition: width 0.35s ease;
+    }
+
+    /* ===========================================
+       NAVIGATION DOTS
+    =========================================== */
+    #nav-dots {
+      position: fixed;
+      right: clamp(0.75rem, 1.5vw, 1.25rem);
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column;
+      gap: 0.45rem;
+      z-index: 8000;
+    }
+    .nav-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .nav-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 5px var(--accent);
+      transform: scale(1.4);
+    }
+    .nav-dot:hover { background: var(--accent-dim); }
+
+    /* ===========================================
+       SLIDE BASE — CRITICAL: 100vh, overflow hidden
+    =========================================== */
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;   /* Dynamic viewport height for mobile */
+      overflow: hidden;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Content area above status bar */
+    .slide-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--slide-pad);
+      padding-bottom: calc(var(--slide-pad) * 0.6 + var(--statusbar-h));
+      max-height: 100%;
+      overflow: hidden;
+    }
+
+    /* Status bar */
+    .statusbar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: var(--statusbar-h);
+      background: var(--accent);
+      display: flex; align-items: center;
+      padding: 0 var(--slide-pad);
+      gap: 2rem;
+      z-index: 10; flex-shrink: 0;
+    }
+    .statusbar span {
+      font-size: var(--small-size);
+      color: #050f07;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .statusbar .spacer { flex: 1; }
+    .statusbar::after {
+      content: 'created by Mengyi @SimWell';
+      font-size: var(--small-size);
+      color: #050f07;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-left: 1.5rem;
+    }
+
+    /* ===========================================
+       REVEAL ANIMATIONS
+       Triggered by .visible class added on scroll
+    =========================================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    .slide.visible .reveal { opacity: 1; transform: none; }
+    .reveal:nth-child(1) { transition-delay: 0.05s; }
+    .reveal:nth-child(2) { transition-delay: 0.12s; }
+    .reveal:nth-child(3) { transition-delay: 0.20s; }
+    .reveal:nth-child(4) { transition-delay: 0.28s; }
+    .reveal:nth-child(5) { transition-delay: 0.36s; }
+    .reveal:nth-child(6) { transition-delay: 0.42s; }
+
+    /* ===========================================
+       TYPOGRAPHY COMPONENTS
+    =========================================== */
+
+    /* Small label above heading */
+    .eyebrow {
+      font-size: var(--small-size);
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: clamp(0.4rem, 1vh, 0.75rem);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .eyebrow .e-accent { color: var(--accent); }
+    .eyebrow::before {
+      content: '';
+      display: block; flex-shrink: 0;
+      width: 1.5rem; height: 1px;
+      background: var(--muted);
+    }
+
+    /* Terminal prompt decoration */
+    .prompt-line {
+      font-size: var(--small-size);
+      color: var(--muted);
+      margin-bottom: clamp(0.6rem, 1.5vh, 1rem);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .prompt-line .p { color: var(--accent); }
+    .cursor-blink {
+      display: inline-block;
+      width: 0.5em; height: 0.85em;
+      background: var(--accent);
+      animation: blink 1.1s step-end infinite;
+      vertical-align: middle;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Main heading */
+    h1.slide-h1 {
+      font-family: var(--font-sans);
+      font-size: var(--title-size);
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: clamp(0.75rem, 2vh, 1.5rem);
+    }
+    h1.slide-h1 .g { color: var(--accent); text-shadow: 0 0 24px var(--accent-dim); }
+
+    /* Blinking block cursor on title slide */
+    .title-cursor {
+      display: inline-block;
+      width: clamp(0.2em, 0.5vw, 0.35em);
+      height: 0.85em;
+      background: var(--accent);
+      margin-left: 0.1em;
+      vertical-align: baseline;
+      position: relative;
+      top: 0.05em;
+      animation: blink 1.1s step-end infinite;
+      box-shadow: 0 0 16px var(--accent-dim);
+    }
+
+    h2.slide-h2 {
+      font-family: var(--font-sans);
+      font-size: var(--h2-size);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: clamp(0.6rem, 1.5vh, 1.1rem);
+    }
+    h2.slide-h2 .g { color: var(--accent); }
+
+    .subtitle {
+      font-size: var(--body-size);
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 560px;
+    }
+
+    /* ===========================================
+       BULLET LIST
+    =========================================== */
+    .bullet-list {
+      list-style: none;
+      display: flex; flex-direction: column;
+      gap: var(--gap);
+    }
+    .bullet-list li {
+      font-size: var(--body-size);
+      line-height: 1.5;
+      display: flex; gap: 0.75rem; align-items: flex-start;
+    }
+    .bullet-list li .bul { color: var(--accent); flex-shrink: 0; font-size: 0.85em; margin-top: 0.15em; }
+    .bullet-list li strong { color: var(--white); font-weight: 500; }
+    .bullet-list li span { color: var(--text); }
+
+    /* ===========================================
+       CODE BLOCK
+    =========================================== */
+    .code-block {
+      background: var(--accent-faint);
+      border: 1px solid var(--accent-muted);
+      border-radius: 6px;
+      padding: clamp(0.75rem, 1.5vw, 1.1rem) clamp(0.85rem, 1.8vw, 1.25rem);
+      font-size: var(--code-size);
+      line-height: 1.75;
+      overflow: hidden;
+    }
+    .code-block .cb-label {
+      font-size: calc(var(--small-size) * 0.9);
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--accent-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .code-block .line { display: block; }
+
+    /* Syntax tokens */
+    .t-cmd    { color: var(--accent); }
+    .t-flag   { color: var(--blue); }
+    .t-arg    { color: var(--yellow); }
+    .t-str    { color: #ff9e6d; }
+    .t-cmt    { color: var(--muted); font-style: italic; }
+    .t-out    { color: rgba(200,247,208,0.4); }
+    .t-prompt { color: var(--muted); }
+    .t-hl     { color: var(--accent); }
+    .t-hl2    { color: var(--blue); }
+
+    /* ===========================================
+       TERM CARD (single terminology concept)
+    =========================================== */
+    .term-card {
+      background: var(--accent-faint);
+      border: 1px solid var(--accent-muted);
+      border-radius: 8px;
+      padding: clamp(1rem, 2vw, 1.5rem);
+    }
+    .term-tag {
+      font-size: var(--small-size);
+      color: var(--accent);
+      border: 1px solid var(--accent-muted);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: clamp(0.5rem, 1vh, 0.75rem);
+      letter-spacing: 0.08em;
+    }
+    .term-card h3 {
+      font-family: var(--font-sans);
+      font-size: var(--h3-size);
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: clamp(0.4rem, 1vh, 0.6rem);
+    }
+    .term-card p {
+      font-size: var(--body-size);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Analogy callout inside term card */
+    .analogy {
+      margin-top: clamp(0.6rem, 1.2vh, 0.9rem);
+      padding: clamp(0.5rem, 1vw, 0.75rem) clamp(0.6rem, 1.2vw, 0.9rem);
+      border-left: 2px solid var(--accent);
+      background: rgba(0,255,65,0.03);
+      border-radius: 0 4px 4px 0;
+      font-size: clamp(0.62rem, 0.95vw, 0.8rem);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .analogy strong { color: var(--text); }
+
+    /* Small example pills */
+    .examples {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      margin-top: clamp(0.4rem, 1vh, 0.65rem);
+    }
+    .ex-pill {
+      font-size: var(--small-size);
+      padding: 0.2rem 0.6rem;
+      background: rgba(0,255,65,0.06);
+      border: 1px solid var(--accent-muted);
+      border-radius: 100px;
+      color: var(--accent);
+    }
+
+    /* ===========================================
+       TWO-COLUMN LAYOUT
+    =========================================== */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(1.5rem, 3vw, 3rem);
+      align-items: start;
+    }
+    .col-label {
+      font-size: var(--small-size);
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: clamp(0.4rem, 0.8vh, 0.65rem);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .col-label::before {
+      content: '';
+      display: block; width: 1rem; height: 1px;
+      background: var(--muted);
+    }
+
+    /* ===========================================
+       STEP LIST (numbered)
+    =========================================== */
+    .step-list {
+      list-style: none;
+      display: flex; flex-direction: column;
+      gap: var(--gap);
+    }
+    .step-list li {
+      display: flex; gap: 0.85rem; align-items: flex-start;
+      font-size: var(--body-size);
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: clamp(1.4rem, 2.2vw, 1.7rem);
+      height: clamp(1.4rem, 2.2vw, 1.7rem);
+      border: 1px solid var(--accent-muted);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--small-size);
+      color: var(--accent);
+      margin-top: 0.05em;
+    }
+    .step-content strong { color: var(--white); display: block; font-weight: 500; margin-bottom: 0.1rem; }
+    .step-content .s-sub { color: var(--muted); font-size: 0.9em; }
+
+    /* ===========================================
+       ARCHITECTURE DIAGRAM (text-based)
+    =========================================== */
+    .arch-box {
+      font-family: var(--font-mono);
+      font-size: clamp(0.58rem, 0.95vw, 0.78rem);
+      line-height: 1.9;
+      padding: clamp(0.75rem, 1.5vw, 1.1rem) clamp(0.85rem, 1.8vw, 1.25rem);
+      background: var(--accent-faint);
+      border: 1px solid var(--accent-muted);
+      border-radius: 6px;
+      white-space: pre;
+      overflow: hidden;
+    }
+    .arch-box .a-hl  { color: var(--accent); }
+    .arch-box .a-hl2 { color: var(--blue); }
+    .arch-box .a-dim { color: var(--muted); }
+
+    /* ===========================================
+       SUMMARY CARDS (closing slide)
+    =========================================== */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--gap);
+    }
+    .summary-card {
+      background: var(--accent-faint);
+      border: 1px solid var(--accent-muted);
+      border-radius: 6px;
+      padding: clamp(0.6rem, 1.2vw, 1rem);
+    }
+    .summary-card h4 {
+      font-size: var(--small-size);
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .summary-card p {
+      font-size: calc(var(--small-size) * 0.95);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .summary-card p + p {
+      margin-top: 0.35rem;
+    }
+    .summary-card p strong {
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    /* ===========================================
+       PER-SLIDE ACCENT COLORS
+       Each slide inherits --accent and its variants.
+       Yellow → Orange → Blue cycling every 3 slides.
+    =========================================== */
+
+    /* Green: slides 1, 2, 16, 17, 18 */
+    #slide-1, #slide-2, #slide-16, #slide-17, #slide-18 {
+      --accent:       #00ff41;
+      --accent-dim:   rgba(0, 255, 65, 0.45);
+      --accent-muted: rgba(0, 255, 65, 0.18);
+      --accent-faint: rgba(0, 255, 65, 0.06);
+    }
+
+    /* Yellow: slide 6 */
+    #slide-6 {
+      --accent:       #ffd36d;
+      --accent-dim:   rgba(255, 211, 109, 0.45);
+      --accent-muted: rgba(255, 211, 109, 0.22);
+      --accent-faint: rgba(255, 211, 109, 0.07);
+    }
+
+    /* Orange: slides 7, 8, 9, 10, 11 */
+    #slide-7, #slide-8, #slide-9, #slide-10, #slide-11 {
+      --accent:       #ff8c42;
+      --accent-dim:   rgba(255, 140, 66, 0.45);
+      --accent-muted: rgba(255, 140, 66, 0.22);
+      --accent-faint: rgba(255, 140, 66, 0.07);
+    }
+
+    /* Blue: slides 3, 4, 5, 13, 14, 15 */
+    #slide-3, #slide-4, #slide-5, #slide-13, #slide-14, #slide-15 {
+      --accent:       #6dd6ff;
+      --accent-dim:   rgba(109, 214, 255, 0.45);
+      --accent-muted: rgba(109, 214, 255, 0.22);
+      --accent-faint: rgba(109, 214, 255, 0.07);
+    }
+
+    /* Purple: slide 19 (References) */
+    #slide-19 {
+      --accent:       #b57aff;
+      --accent-dim:   rgba(181, 122, 255, 0.45);
+      --accent-muted: rgba(181, 122, 255, 0.22);
+      --accent-faint: rgba(181, 122, 255, 0.07);
+    }
+
+    /* Pink: slide 12 */
+    #slide-12 {
+      --accent:       #ff6eb4;
+      --accent-dim:   rgba(255, 110, 180, 0.45);
+      --accent-muted: rgba(255, 110, 180, 0.22);
+      --accent-faint: rgba(255, 110, 180, 0.07);
+    }
+
+    /* ===========================================
+       RESPONSIVE BREAKPOINTS
+       Viewport height breakpoints for compact screens
+    =========================================== */
+    @media (max-height: 700px) {
+      :root {
+        --slide-pad: clamp(1.25rem, 3vw, 2.5rem);
+        --gap: clamp(0.4rem, 0.9vw, 0.8rem);
+        --h2-size: clamp(1.1rem, 2.4vw, 1.75rem);
+        --h3-size: clamp(0.9rem, 1.6vw, 1.2rem);
+      }
+    }
+    @media (max-height: 600px) {
+      :root {
+        --slide-pad: clamp(0.75rem, 2.5vw, 1.5rem);
+        --h2-size: clamp(1rem, 2vw, 1.5rem);
+        --body-size: clamp(0.65rem, 1vw, 0.85rem);
+        --code-size: clamp(0.58rem, 0.9vw, 0.75rem);
+        --gap: clamp(0.3rem, 0.7vw, 0.6rem);
+      }
+      #nav-dots { display: none; }
+    }
+    @media (max-height: 500px) {
+      :root {
+        --slide-pad: clamp(0.5rem, 2vw, 1rem);
+        --h2-size: clamp(0.9rem, 1.8vw, 1.2rem);
+        --body-size: clamp(0.6rem, 0.9vw, 0.75rem);
+      }
+    }
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; gap: 1rem; }
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      :root { --title-size: clamp(1.8rem, 10vw, 3rem); }
+    }
+
+    /* ===========================================
+       LIGHT MODE
+       Toggled by adding .light-mode to <body>.
+       Every accent color is replaced with a darker,
+       high-contrast equivalent for readability on light bg.
+    =========================================== */
+    body.light-mode {
+      --bg:    #f4faf5;
+      --text:  #1c3a22;
+      --muted: #4a6e50;
+      --white: #081408;
+    }
+    body.light-mode::before {
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px, transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px
+      );
+    }
+    body.light-mode::after {
+      background: radial-gradient(ellipse, rgba(0, 120, 40, 0.06) 0%, transparent 70%);
+    }
+
+    /* Global UI elements (buttons, dots, progress) */
+    body.light-mode #progress-bar {
+      background: #007a1e;
+      box-shadow: 0 0 8px rgba(0, 122, 30, 0.4);
+    }
+    body.light-mode .nav-dot.active {
+      background: #007a1e;
+      box-shadow: 0 0 5px rgba(0, 122, 30, 0.4);
+    }
+    body.light-mode .nav-dot:hover { background: rgba(0, 122, 30, 0.4); }
+    body.light-mode #editToggle,
+    body.light-mode #themeToggle {
+      background: #f4faf5;
+      color: #1c3a22;
+      border-color: rgba(26, 58, 34, 0.25);
+    }
+    body.light-mode #editToggle.active {
+      background: #007a1e;
+      color: #f4faf5;
+      border-color: #007a1e;
+    }
+
+    /* Syntax token colors — neon values are unreadable on light bg */
+    body.light-mode .t-flag { color: #005fa8; }
+    body.light-mode .t-arg  { color: #7a5a00; }
+    body.light-mode .t-str  { color: #8a3000; }
+    body.light-mode .t-cmt  { color: #5a7a5e; font-style: italic; }
+    body.light-mode .t-out  { color: rgba(28, 58, 34, 0.45); }
+    body.light-mode .arch-box .a-hl2 { color: #005fa8; }
+    body.light-mode .t-hl2  { color: #005fa8; }
+
+    /* Per-slide accent overrides for light mode
+       Each neon color is replaced with a dark, readable equivalent */
+
+    /* Green slides (1, 2, 16, 17, 18) → dark forest green */
+    body.light-mode #slide-1,
+    body.light-mode #slide-2,
+    body.light-mode #slide-16,
+    body.light-mode #slide-17,
+    body.light-mode #slide-18 {
+      --accent:       #007a1e;
+      --accent-dim:   rgba(0, 122, 30, 0.3);
+      --accent-muted: rgba(0, 122, 30, 0.2);
+      --accent-faint: rgba(0, 122, 30, 0.06);
+    }
+
+    /* Yellow slide (6) → dark amber */
+    body.light-mode #slide-6 {
+      --accent:       #7a5a00;
+      --accent-dim:   rgba(122, 90, 0, 0.3);
+      --accent-muted: rgba(122, 90, 0, 0.2);
+      --accent-faint: rgba(122, 90, 0, 0.06);
+    }
+
+    /* Orange slides (7, 8, 9, 10, 11) → dark burnt orange */
+    body.light-mode #slide-7,
+    body.light-mode #slide-8,
+    body.light-mode #slide-9,
+    body.light-mode #slide-10,
+    body.light-mode #slide-11 {
+      --accent:       #b84400;
+      --accent-dim:   rgba(184, 68, 0, 0.3);
+      --accent-muted: rgba(184, 68, 0, 0.2);
+      --accent-faint: rgba(184, 68, 0, 0.06);
+    }
+
+    /* Blue slides (3, 4, 5, 13, 14, 15) → dark navy blue */
+    body.light-mode #slide-3,
+    body.light-mode #slide-4,
+    body.light-mode #slide-5,
+    body.light-mode #slide-13,
+    body.light-mode #slide-14,
+    body.light-mode #slide-15 {
+      --accent:       #005fa8;
+      --accent-dim:   rgba(0, 95, 168, 0.3);
+      --accent-muted: rgba(0, 95, 168, 0.2);
+      --accent-faint: rgba(0, 95, 168, 0.06);
+    }
+
+    /* Pink slide (12) → dark magenta */
+    body.light-mode #slide-12 {
+      --accent:       #a0006a;
+      --accent-dim:   rgba(160, 0, 106, 0.3);
+      --accent-muted: rgba(160, 0, 106, 0.2);
+      --accent-faint: rgba(160, 0, 106, 0.06);
+    }
+
+    /* Purple slide (19) → dark violet */
+    body.light-mode #slide-19 {
+      --accent:       #5500bb;
+      --accent-dim:   rgba(85, 0, 187, 0.3);
+      --accent-muted: rgba(85, 0, 187, 0.2);
+      --accent-faint: rgba(85, 0, 187, 0.06);
+    }
+
+    /* Theme toggle button — fixed top-right */
+    #themeToggle {
+      position: fixed; top: 0.85rem; right: 0.85rem;
+      z-index: 10001;
+      background: var(--bg);
+      border: 1px solid var(--accent-muted);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: var(--small-size);
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      letter-spacing: 0.06em;
+    }
+    #themeToggle:hover {
+      background: var(--accent-faint);
+      border-color: var(--accent);
+    }
+
+    /* ===========================================
+       REDUCED MOTION
+    =========================================== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    /* ===========================================
+       INLINE EDIT MODE
+       Hotzone: top-left 80×80px corner
+       Toggle visibility controlled by JS only
+       (CSS ~ sibling selector not used — pointer-events bug)
+    =========================================== */
+    .edit-hotzone {
+      position: fixed; top: 0; left: 0;
+      width: 80px; height: 80px;
+      z-index: 10000;
+    }
+    #editToggle {
+      position: fixed; top: 0.85rem; left: 0.85rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 10001;
+      background: var(--bg);
+      border: 1px solid var(--accent-muted);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: var(--small-size);
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+    }
+    #editToggle.show,
+    #editToggle.active { opacity: 1; pointer-events: auto; }
+    #editToggle.active {
+      background: var(--accent);
+      color: #050f07;
+      border-color: var(--accent);
+    }
+
+    /* Edit toolbar (save / export) */
+    #editToolbar {
+      position: fixed;
+      bottom: calc(var(--statusbar-h) + 0.6rem);
+      right: clamp(1rem, 2.5vw, 2rem);
+      display: flex; gap: 0.4rem;
+      z-index: 10002;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    #editToolbar.visible { opacity: 1; pointer-events: auto; }
+    .tb-btn {
+      background: var(--bg);
+      border: 1px solid var(--accent-muted);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: var(--small-size);
+      padding: 0.3rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .tb-btn:hover { background: var(--accent-faint); border-color: var(--accent); }
+
+    /* Editable text highlight in edit mode */
+    body.editing [data-edit] {
+      outline: 1px dashed rgba(0,255,65,0.3);
+      border-radius: 2px;
+      cursor: text;
+    }
+    body.editing [data-edit]:focus {
+      outline: 1px solid var(--accent);
+      background: rgba(0,255,65,0.04);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Progress bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Navigation dots (generated by JS) -->
+  <nav id="nav-dots" aria-label="Slide navigation"></nav>
+
+  <!-- Edit mode: hotzone + toggle button -->
+  <div class="edit-hotzone" id="editHotzone"></div>
+  <button id="editToggle" aria-label="Toggle edit mode">✏ Edit</button>
+
+  <!-- Dark / light theme toggle -->
+  <button id="themeToggle" aria-label="Toggle light/dark mode">☀ Light</button>
+
+  <!-- Edit toolbar -->
+  <div id="editToolbar">
+    <button class="tb-btn" id="btnSave">💾 Save</button>
+    <button class="tb-btn" id="btnExport">⬇ Export</button>
+  </div>
+
+  <!-- =============================================
+       SLIDE 01 — TITLE
+  ============================================== -->
+  <section class="slide" id="slide-1" aria-label="Slide 1: Title">
+    <div class="slide-inner">
+      <div class="prompt-line reveal">
+        <span class="p">~/docker-intro $</span>
+        <span>docker run hello-world</span>
+        <span class="cursor-blink"></span>
+      </div>
+      <h1 class="slide-h1 reveal">
+        Introduction<br>to <span class="g">Docker</span><span class="title-cursor"></span>
+      </h1>
+      <p class="subtitle reveal" data-edit>
+        A hands-on guide for developers &amp; DevOps engineers
+      </p>
+      <div class="examples reveal" style="margin-top: clamp(1rem,2.5vh,1.5rem);">
+        <span class="ex-pill">Images</span>
+        <span class="ex-pill">Containers</span>
+        <span class="ex-pill">Docker Engine</span>
+        <span class="ex-pill">Registry</span>
+        <span class="ex-pill">PostgreSQL Demo</span>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Docker Tutorial</span>
+      <span class="spacer"></span>
+      <span>Slide 01 / 19</span>
+      <span>↑↓ Navigate</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 02 — AGENDA
+  ============================================== -->
+  <section class="slide" id="slide-2" aria-label="Slide 2: Agenda">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Roadmap</span></div>
+      <h2 class="slide-h2 reveal">What We’ll <span class="g">Cover Today</span></h2>
+      <ol class="step-list reveal">
+        <li>
+          <span class="step-num">1</span>
+          <div class="step-content">
+            <strong>Basic Intro</strong>
+            <span class="s-sub">What is Docker and why use it?</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <div class="step-content">
+            <strong>Docker on Different Machines</strong>
+            <span class="s-sub">Linux, macOS, and Windows — how it runs on each</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <div class="step-content">
+            <strong>Core Concepts</strong>
+            <span class="s-sub">Image · Container · Docker Engine · Registry</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <div class="step-content">
+            <strong>Demo + Challenge</strong>
+            <span class="s-sub">Run PostgreSQL live — then win the prize 🏆</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">5</span>
+          <div class="step-content">
+            <strong>Useful Commands</strong>
+            <span class="s-sub">A handy reference for day-to-day Docker work</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">6</span>
+          <div class="step-content">
+            <strong>Wrap Up &amp; References</strong>
+            <span class="s-sub">Summary, next steps, and further reading</span>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <div class="statusbar">
+      <span>Agenda</span>
+      <span class="spacer"></span>
+      <span>Slide 02 / 19</span>
+      <span>↑↓ Navigate</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 03 — THE PROBLEM
+  ============================================== -->
+  <section class="slide" id="slide-3" aria-label="Slide 3: The Problem">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Context</span></div>
+      <h2 class="slide-h2 reveal">"Works on <span class="g">My Machine</span>"</h2>
+      <p class="subtitle reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.1rem);" data-edit>
+        Sound familiar? Inconsistent environments are the #1 source of dev friction.
+      </p>
+      <ul class="bullet-list reveal">
+        <li><span class="bul">▸</span><span><strong>Environment drift</strong> — Dev, staging, and prod run different OS packages and library versions</span></li>
+        <li><span class="bul">▸</span><span><strong>Dependency conflicts</strong> — Python 3.8 on laptop, 3.11 in CI. Node 16 vs Node 20. You know the drill.</span></li>
+        <li><span class="bul">▸</span><span><strong>Slow onboarding</strong> — New teammates spend days configuring their local environment</span></li>
+        <li><span class="bul">▸</span><span><strong>The blame game</strong> — "It works on my machine" is not a deployment strategy</span></li>
+      </ul>
+    </div>
+    <div class="statusbar">
+      <span>The Problem</span>
+      <span class="spacer"></span>
+      <span>Slide 03 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 04 — WHAT IS DOCKER?
+  ============================================== -->
+  <section class="slide" id="slide-4" aria-label="Slide 4: What is Docker">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Definition</span></div>
+      <h2 class="slide-h2 reveal">What is <span class="g">Docker?</span></h2>
+      <p class="subtitle reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.1rem);" data-edit>
+        Docker is a platform for building, shipping, and running applications in isolated environments called <strong style="color:var(--white)">containers</strong>.
+      </p>
+      <ul class="bullet-list reveal">
+        <li><span class="bul">▸</span><span><strong>Not a virtual machine</strong> — containers share the host OS kernel, making them lightweight and fast</span></li>
+        <li><span class="bul">▸</span><span><strong>OS-level isolation</strong> — each container gets its own filesystem, network, and processes</span></li>
+        <li><span class="bul">▸</span><span><strong>Portable</strong> — build once, run anywhere Docker is installed: local, cloud, CI/CD</span></li>
+        <li><span class="bul">▸</span><span><strong>Fast</strong> — containers start in milliseconds vs. minutes for full VMs</span></li>
+      </ul>
+      <div class="analogy reveal" style="margin-top:clamp(0.75rem,1.5vh,1.1rem);">
+        <strong>Analogy:</strong> A VM ships the entire house (OS included). A container ships just the apartment — it shares the building's plumbing (the host kernel).
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>What is Docker?</span>
+      <span class="spacer"></span>
+      <span>Slide 04 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 05 — WHY USE DOCKER?
+  ============================================== -->
+  <section class="slide" id="slide-5" aria-label="Slide 5: Why use Docker">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Motivation</span></div>
+      <h2 class="slide-h2 reveal">Why Use <span class="g">Docker?</span></h2>
+      <ul class="bullet-list reveal">
+        <li><span class="bul">▸</span><span><strong>Consistent environments</strong> — the container is the environment. Same behavior everywhere, always.</span></li>
+        <li><span class="bul">▸</span><span><strong>Isolation</strong> — run Postgres 14 and Postgres 16 side-by-side without conflicts</span></li>
+        <li><span class="bul">▸</span><span><strong>Reproducibility</strong> — share a <code>Dockerfile</code> and everyone gets the exact same setup</span></li>
+        <li><span class="bul">▸</span><span><strong>Faster CI/CD</strong> — build images in CI and ship the exact same artifact to production</span></li>
+        <li><span class="bul">▸</span><span><strong>Easy cleanup</strong> — done with a database? <code>docker rm</code> — it's completely gone, no residue</span></li>
+      </ul>
+    </div>
+    <div class="statusbar">
+      <span>Why Docker?</span>
+      <span class="spacer"></span>
+      <span>Slide 05 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 06 — DOCKER ACROSS PLATFORMS
+  ============================================== -->
+  <section class="slide" id="slide-6" aria-label="Slide 6: Docker Across Platforms">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Platform</span></div>
+      <h2 class="slide-h2 reveal">Docker on <span class="g">Linux, Mac &amp; Windows</span></h2>
+      <p class="subtitle reveal" style="margin-bottom:clamp(0.5rem,1vh,0.75rem);" data-edit>
+        <strong style="color:var(--white)">Docker Engine</strong> (<code>dockerd</code>) is the server-side daemon that actually builds and runs containers. Where it runs depends on your OS.
+      </p>
+      <div class="reveal" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:clamp(0.75rem,1.5vw,1.5rem); align-items:start;">
+        <div>
+          <div class="col-label">🐧 Linux</div>
+          <div class="term-card">
+            <div class="term-tag">Native</div>
+            <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Docker Engine runs <strong style="color:var(--white)">natively on the host OS</strong>. Containers use Linux kernel features (cgroups, namespaces) directly — no VM, no overhead.</p>
+            <div class="examples" style="margin-top:0.5rem;">
+              <span class="ex-pill">dockerd on host</span>
+              <span class="ex-pill">No VM</span>
+              <span class="ex-pill">Full performance</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label">🍎 macOS</div>
+          <div class="term-card">
+            <div class="term-tag">Docker Desktop</div>
+            <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Since macOS has no Linux kernel, Docker Desktop spins up a small <strong style="color:var(--white)">Linux VM</strong> behind the scenes. Docker Engine runs inside it — you never notice it's there.</p>
+            <div class="examples" style="margin-top:0.5rem;">
+              <span class="ex-pill">Linux VM</span>
+              <span class="ex-pill">Transparent to user</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label">🪟 Windows</div>
+          <div class="term-card">
+            <div class="term-tag">Desktop / WSL2</div>
+            <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Windows needs the same Linux layer. The easiest option is <strong style="color:var(--white)">Docker Desktop</strong>, which uses WSL2 under the hood. Prefer no GUI? Install Docker Engine directly inside a WSL2 Linux distro.</p>
+            <div class="examples" style="margin-top:0.5rem;">
+              <span class="ex-pill">Docker Desktop</span>
+              <span class="ex-pill">WSL2 Engine</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="analogy reveal" style="margin-top:clamp(0.5rem,1vh,0.75rem);">
+        <strong>Key insight:</strong> The Docker CLI is just a client — it talks to <code>dockerd</code> via a socket. Whether that daemon runs on bare metal or inside a VM is completely transparent to you.
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Docker Platforms</span>
+      <span class="spacer"></span>
+      <span>Slide 06 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 07 — TERMINOLOGY: IMAGE
+  ============================================== -->
+  <section class="slide" id="slide-7" aria-label="Slide 7: Image">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Core Concept 01 / 04</span></div>
+      <h2 class="slide-h2 reveal"><span class="g">Image</span></h2>
+      <div class="term-card reveal">
+        <div class="term-tag">docker image</div>
+        <p data-edit>
+          A <strong style="color:var(--white)">read-only template</strong> that contains everything needed to run an application: code, runtime, libraries, environment variables, and config files. Images are built in <strong style="color:var(--white)">layers</strong> — each instruction in a Dockerfile adds a layer.
+        </p>
+        <div class="examples" style="margin-top:clamp(0.5rem,1vh,0.75rem);">
+          <span class="ex-pill">postgres:16</span>
+          <span class="ex-pill">nginx:alpine</span>
+          <span class="ex-pill">node:20-slim</span>
+          <span class="ex-pill">python:3.12</span>
+        </div>
+        <div class="analogy">
+          <strong>Think of it as:</strong> a recipe (or a class in OOP). It defines what the running thing will look like, but isn't running itself.
+        </div>
+      </div>
+      <div class="code-block reveal" style="margin-top:clamp(0.6rem,1.2vh,0.9rem);">
+        <span class="line"><span class="t-cmt"># List images on your machine</span></span>
+        <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker images</span></span>
+        <span class="line"><span class="t-out">REPOSITORY   TAG       IMAGE ID       SIZE</span></span>
+        <span class="line"><span class="t-out">postgres     16        a3f9…          428MB</span></span>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Image</span>
+      <span class="spacer"></span>
+      <span>Slide 07 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 08 — TERMINOLOGY: CONTAINER
+  ============================================== -->
+  <section class="slide" id="slide-8" aria-label="Slide 8: Container">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Core Concept 02 / 04</span></div>
+      <h2 class="slide-h2 reveal"><span class="g">Container</span></h2>
+      <div class="term-card reveal">
+        <div class="term-tag">docker container</div>
+        <p data-edit>
+          A <strong style="color:var(--white)">running instance of an image</strong>. When you start a container, Docker creates an isolated process with its own filesystem (copied from the image), network interface, and process space.
+        </p>
+        <div class="analogy">
+          <strong>Image vs Container</strong> is like <strong>Class vs Object</strong> in OOP. The image is the blueprint; the container is the live instance. You can run many containers from one image.
+        </div>
+      </div>
+      <div class="code-block reveal" style="margin-top:clamp(0.6rem,1.2vh,0.9rem);">
+        <span class="line"><span class="t-cmt"># List running containers</span></span>
+        <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker ps</span></span>
+        <span class="line"><span class="t-out">CONTAINER ID   IMAGE        STATUS         NAMES</span></span>
+        <span class="line"><span class="t-out">d7f3a1b2e9c4   postgres:16  Up 2 minutes   mypostgres</span></span>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Container</span>
+      <span class="spacer"></span>
+      <span>Slide 08 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 09 — TERMINOLOGY: DOCKER ENGINE
+  ============================================== -->
+  <section class="slide" id="slide-9" aria-label="Slide 9: Docker Engine">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Core Concept 03 / 04</span></div>
+      <h2 class="slide-h2 reveal"><span class="g">Docker Engine</span></h2>
+      <div class="term-card reveal">
+        <div class="term-tag">dockerd</div>
+        <p data-edit>
+          The <strong style="color:var(--white)">core runtime</strong> that builds and runs containers. It uses a client-server architecture with three components: the <strong style="color:var(--white)">Docker Daemon</strong> (<code>dockerd</code>), the <strong style="color:var(--white)">Docker CLI</strong>, and a <strong style="color:var(--white)">REST API</strong> that connects them.
+        </p>
+      </div>
+      <div class="two-col reveal" style="margin-top:clamp(0.6rem,1.2vh,0.9rem);">
+        <div>
+          <div class="col-label">Components</div>
+          <ul class="bullet-list">
+            <li><span class="bul">▸</span><span><strong>Docker Daemon</strong> (<code>dockerd</code>) — the server process that manages containers, images, and networks</span></li>
+            <li><span class="bul">▸</span><span><strong>Docker CLI</strong> (<code>docker</code>) — the command-line tool you interact with</span></li>
+            <li><span class="bul">▸</span><span><strong>REST API</strong> — the interface between CLI and daemon</span></li>
+          </ul>
+        </div>
+        <div class="code-block" style="align-self:stretch; display:flex; flex-direction:column; justify-content:center;">
+          <span class="t-cmt"># You type:</span>
+          <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker run</span> <span class="t-arg">postgres</span></span>
+          <br>
+          <span class="t-cmt"># CLI → REST API → dockerd</span>
+          <span class="t-cmt"># dockerd pulls image, creates</span>
+          <span class="t-cmt"># container, starts process</span>
+        </div>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Docker Engine</span>
+      <span class="spacer"></span>
+      <span>Slide 09 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 10 — TERMINOLOGY: REGISTRY
+  ============================================== -->
+  <section class="slide" id="slide-10" aria-label="Slide 10: Registry">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Core Concept 04 / 04</span></div>
+      <h2 class="slide-h2 reveal"><span class="g">Registry</span></h2>
+      <div class="term-card reveal">
+        <div class="term-tag">docker registry</div>
+        <p data-edit>
+          A <strong style="color:var(--white)">storage and distribution system for Docker images</strong>. Think of it as npm or PyPI, but for container images. The default public registry is <strong style="color:var(--white)">Docker Hub</strong>.
+        </p>
+      </div>
+      <div class="two-col reveal" style="margin-top:clamp(0.6rem,1.2vh,0.9rem);">
+        <div>
+          <div class="col-label">Public registries</div>
+          <div class="examples">
+            <span class="ex-pill">Docker Hub</span>
+            <span class="ex-pill">GitHub GHCR</span>
+          </div>
+          <div class="col-label" style="margin-top:0.75rem;">Private registries</div>
+          <div class="examples">
+            <span class="ex-pill">AWS ECR</span>
+            <span class="ex-pill">Azure ACR</span>
+            <span class="ex-pill">GCP Artifact Registry</span>
+          </div>
+        </div>
+        <div class="code-block" style="align-self:stretch; display:flex; flex-direction:column; justify-content:center;">
+          <span class="t-cmt"># Download from registry</span>
+          <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker pull</span> <span class="t-arg">postgres:16</span></span>
+          <br>
+          <span class="t-cmt"># Upload to registry</span>
+          <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker push</span> <span class="t-arg">myapp:v1.0</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Registry</span>
+      <span class="spacer"></span>
+      <span>Slide 10 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 11 — ARCHITECTURE OVERVIEW
+  ============================================== -->
+  <section class="slide" id="slide-11" aria-label="Slide 11: Architecture">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Big Picture</span></div>
+      <h2 class="slide-h2 reveal">How It All <span class="g">Fits Together</span></h2>
+      <div class="arch-box reveal">
+<span class="a-hl">  Developer</span>
+<span class="a-dim">      │  docker pull / docker run</span>
+<span class="a-dim">      ▼</span>
+<span class="a-hl">  Docker CLI</span>  <span class="a-dim">───── REST API ─────▶</span>  <span class="a-hl">Docker Engine (dockerd)</span>
+<span class="a-dim">                                          │</span>
+<span class="a-dim">                                          │  pull image if not local</span>
+<span class="a-dim">                                          ▼</span>
+<span class="a-hl2">                               Registry (Docker Hub)</span>
+<span class="a-dim">                                          │</span>
+<span class="a-dim">                                          │  image layers downloaded</span>
+<span class="a-dim">                                          ▼</span>
+<span class="a-hl">                               Docker Engine (dockerd)</span>
+<span class="a-dim">                                 ├──▶</span> <span class="a-hl">Container 1</span>  <span class="a-dim">(postgres:16)</span>
+<span class="a-dim">                                 ├──▶</span> <span class="a-hl">Container 2</span>  <span class="a-dim">(nginx:alpine)</span>
+<span class="a-dim">                                 └──▶</span> <span class="a-hl">Container 3</span>  <span class="a-dim">(your-app:latest)</span>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Architecture</span>
+      <span class="spacer"></span>
+      <span>Slide 11 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 12 — INSTALL DOCKER DESKTOP
+  ============================================== -->
+  <section class="slide" id="slide-12" aria-label="Slide 12: Installation">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Setup</span></div>
+      <h2 class="slide-h2 reveal">Installing <span class="g">Docker Desktop</span></h2>
+      <ol class="step-list reveal">
+        <li>
+          <span class="step-num">1</span>
+          <div class="step-content">
+            <strong>Enable WSL2</strong>
+            <span class="s-sub"><code>wsl --install</code> in PowerShell (as Admin), then reboot</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <div class="step-content">
+            <strong>Download Docker Desktop</strong>
+            <span class="s-sub">From <code>docker.com/products/docker-desktop</code> — choose the Windows installer</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <div class="step-content">
+            <strong>Install &amp; configure</strong>
+            <span class="s-sub">Run the installer, ensure "Use WSL 2 instead of Hyper-V" is checked</span>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <div class="step-content">
+            <strong>Verify installation</strong>
+            <span class="s-sub">Open any terminal and run <code>docker --version</code> and <code>docker run hello-world</code></span>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <div class="statusbar">
+      <span>Installation</span>
+      <span class="spacer"></span>
+      <span>Slide 12 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 13 — DEMO: PULL POSTGRESQL
+  ============================================== -->
+  <section class="slide" id="slide-13" aria-label="Slide 13: Demo pull">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Demo — Step 1 / 3</span></div>
+      <h2 class="slide-h2 reveal">Pull the <span class="g">PostgreSQL Image</span></h2>
+      <p class="subtitle reveal" style="margin-bottom:clamp(0.6rem,1.2vh,0.9rem);" data-edit>
+        Fetch the official PostgreSQL image from Docker Hub. This downloads all the image layers to your local machine.
+      </p>
+      <div class="code-block reveal">
+        <div class="cb-label">Terminal</div>
+        <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker pull</span> <span class="t-arg">postgres:16</span></span>
+        <span class="line">&nbsp;</span>
+        <span class="line"><span class="t-out">16: Pulling from library/postgres</span></span>
+        <span class="line"><span class="t-out">a378f10b3218: Pull complete</span></span>
+        <span class="line"><span class="t-out">bab6e940cb65: Pull complete</span></span>
+        <span class="line"><span class="t-out">Status: Downloaded newer image for postgres:16</span></span>
+        <span class="line"><span class="t-out">docker.io/library/postgres:16</span></span>
+      </div>
+      <div class="code-block reveal" style="margin-top:var(--gap);">
+        <div class="cb-label">Verify image is local</div>
+        <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker images</span> <span class="t-arg">postgres</span></span>
+        <span class="line"><span class="t-out">REPOSITORY   TAG   IMAGE ID       CREATED       SIZE</span></span>
+        <span class="line"><span class="t-out">postgres     16    a3f9c84b1e22   2 weeks ago   428MB</span></span>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Demo · Pull</span>
+      <span class="spacer"></span>
+      <span>Slide 13 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 14 — DEMO: RUN POSTGRESQL
+  ============================================== -->
+  <section class="slide" id="slide-14" aria-label="Slide 14: Demo run">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Demo — Step 2 / 3</span></div>
+      <h2 class="slide-h2 reveal">Run a <span class="g">PostgreSQL Container</span></h2>
+      <div class="code-block reveal">
+        <div class="cb-label">Terminal — run container</div>
+        <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker run</span> \</span>
+        <span class="line">  <span class="t-flag">-d</span>                              <span class="t-cmt"># detached (background)</span></span>
+        <span class="line">  <span class="t-flag">--name</span> <span class="t-arg">mypostgres</span>             <span class="t-cmt"># give it a friendly name</span></span>
+        <span class="line">  <span class="t-flag">-e</span> <span class="t-arg">POSTGRES_USER</span>=<span class="t-str">admin</span>       <span class="t-cmt"># set username</span></span>
+        <span class="line">  <span class="t-flag">-e</span> <span class="t-arg">POSTGRES_PASSWORD</span>=<span class="t-str">secret</span>   <span class="t-cmt"># set password</span></span>
+        <span class="line">  <span class="t-flag">-e</span> <span class="t-arg">POSTGRES_DB</span>=<span class="t-str">mydb</span>          <span class="t-cmt"># create default DB</span></span>
+        <span class="line">  <span class="t-flag">-p</span> <span class="t-arg">5432:5432</span>                  <span class="t-cmt"># map host:container port</span></span>
+        <span class="line">  <span class="t-arg">postgres:16</span></span>
+      </div>
+      <div class="analogy reveal" style="margin-top:var(--gap);">
+        <strong>-p 5432:5432</strong> — left side is your local port, right side is the port inside the container. You connect to <code>localhost:5432</code> as usual.
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Demo · Run</span>
+      <span class="spacer"></span>
+      <span>Slide 14 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 15 — DEMO: VERIFY & CONNECT
+  ============================================== -->
+  <section class="slide" id="slide-15" aria-label="Slide 15: Demo connect">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Demo — Step 3 / 3</span></div>
+      <h2 class="slide-h2 reveal">Verify &amp; <span class="g">Connect</span></h2>
+      <div class="two-col reveal">
+        <div>
+          <div class="col-label">Check it's running</div>
+          <div class="code-block">
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker ps</span></span>
+            <span class="line"><span class="t-out">CONTAINER ID IMAGE      STATUS</span></span>
+            <span class="line"><span class="t-out">d7f3a1b2e9c4 postgres:16 Up 30s  mypostgres</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Stop and remove</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker stop</span> <span class="t-arg">mypostgres</span></span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker rm</span>   <span class="t-arg">mypostgres</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="col-label">Connect via psql</div>
+          <div class="code-block">
+            <span class="t-cmt"># Shell inside container</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker exec</span> <span class="t-flag">-it</span> <span class="t-arg">mypostgres</span> \</span>
+            <span class="line">    <span class="t-cmd">psql</span> <span class="t-flag">-U</span> <span class="t-arg">admin</span> <span class="t-flag">-d</span> <span class="t-arg">mydb</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="line"><span class="t-out">psql (16.0)</span></span>
+            <span class="line"><span class="t-out">mydb=# \l</span></span>
+            <span class="line"><span class="t-out">mydb=# SELECT version();</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="analogy reveal" style="margin-top:var(--gap);">
+        Or connect from your host with any client (DBeaver, TablePlus, psql) at <code>localhost:5432</code> using user <code>admin</code> / password <code>secret</code>.
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Demo · Connect</span>
+      <span class="spacer"></span>
+      <span>Slide 15 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 16 — CHALLENGE
+  ============================================== -->
+  <section class="slide" id="slide-16" aria-label="Slide 16: Challenge">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Challenge</span></div>
+      <h2 class="slide-h2 reveal">Let's Test Who Learned <span class="g">Docker!</span></h2>
+      <p class="subtitle reveal" style="margin-bottom:clamp(0.75rem,1.5vh,1.1rem);" data-edit>
+        Pull my image and get it running — <strong style="color:var(--white)">no hints, no guidance.</strong> Use everything you've learned today.
+      </p>
+      <div class="code-block reveal" style="margin-bottom:var(--gap);">
+        <div class="cb-label">Target Repository</div>
+        <span class="line" style="font-size:var(--h3-size); letter-spacing:0.02em;">
+          <span class="t-hl" data-edit>your-username/your-image:tag</span><span class="cursor-blink"></span>
+        </span>
+      </div>
+      <ul class="bullet-list reveal">
+        <li><span class="bul">▸</span><span>Challenge 1: Pull the image from Docker Hub. You will need to figure out the correct tag.</span></li>
+        <li><span class="bul">▸</span><span>Challenge 2: Run it as a container — do not run it in the background, and give it a name using <code>--name demoApp</code>.</span></li>
+        <li><span class="bul">▸</span><span>Challenge 3: NGINX's default HTTP port is 80. Map it to port 8080 on your host using <code>-p 8080:80</code>.</span></li>
+        <li><span class="bul">▸</span><span>Challenge 4: Unmute yourself and tell me what you see 🙂</span></li>
+        <li><span class="bul">▸</span><span>Challenge 5: Remember to top it.</span></li>
+      </ul>
+    </div>
+    <div class="statusbar">
+      <span>Challenge</span>
+      <span class="spacer"></span>
+      <span>Slide 16 / 19</span>
+      <span>Go!</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 17 — USEFUL COMMANDS
+  ============================================== -->
+  <section class="slide" id="slide-17" aria-label="Slide 17: Useful Commands">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Reference</span></div>
+      <h2 class="slide-h2 reveal">Useful <span class="g">Commands</span></h2>
+      <div class="two-col reveal">
+
+        <!-- Left column: System & Disk -->
+        <div>
+          <div class="col-label">System &amp; Disk</div>
+          <div class="code-block">
+            <span class="t-cmt"># Disk usage breakdown</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker system df</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Remove ALL unused objects (images, containers, networks)</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker system prune</span> <span class="t-flag">-a</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Remove only dangling images</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker image prune</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Remove unused volumes</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker volume prune</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># List networks / volumes</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker network ls</span></span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker volume ls</span></span>
+          </div>
+        </div>
+
+        <!-- Right column: Inspection & Ops -->
+        <div>
+          <div class="col-label">Inspection &amp; Ops</div>
+          <div class="code-block">
+            <span class="t-cmt"># Pull image from registry</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker pull</span> <span class="t-arg">nginx:alpine</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Stream container logs</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker logs</span> <span class="t-flag">-f</span> <span class="t-arg">&lt;name&gt;</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Live CPU / memory per container</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker stats</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Full JSON details of container or image</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker inspect</span> <span class="t-arg">&lt;name&gt;</span></span>
+            <span class="line">&nbsp;</span>
+            <span class="t-cmt"># Tag &amp; push to a registry</span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker tag</span> <span class="t-arg">myapp:latest user/myapp:v1</span></span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker push</span> <span class="t-arg">user/myapp:v1</span></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Reference · Commands</span>
+      <span class="spacer"></span>
+      <span>Slide 17 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 18 — SUMMARY & NEXT STEPS
+  ============================================== -->
+  <section class="slide" id="slide-18" aria-label="Slide 18: Summary">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Wrap Up</span></div>
+      <h2 class="slide-h2 reveal">Summary &amp; <span class="g">Next Steps</span></h2>
+      <div class="summary-grid reveal">
+        <div class="summary-card">
+          <h4>What We Covered</h4>
+          <p><strong>The Problem</strong> — "works on my machine" eliminated by packaging app + deps together</p>
+          <p><strong>Core concepts</strong> — Image (blueprint), Container (running instance), Docker Engine (daemon + CLI), Registry (image store)</p>
+          <p><strong>PostgreSQL demo</strong> — pulled, ran, connected, and cleaned up a database in minutes</p>
+        </div>
+        <div class="summary-card">
+          <h4>Key Takeaways</h4>
+          <p><strong>Isolation</strong> — each container gets its own filesystem, network, and process space; no interference with the host</p>
+          <p><strong>Portability</strong> — same image runs identically on dev laptop, CI server, and production host</p>
+          <p><strong>Ephemerality</strong> — containers are disposable; state lives in volumes, not in the container itself</p>
+        </div>
+        <div class="summary-card">
+          <h4>Next Steps</h4>
+          <p><strong>Dockerfile</strong> — write your own image build instructions</p>
+          <p><strong>Docker Compose</strong> — orchestrate multi-container apps (app + db + cache) with one YAML file</p>
+          <p><strong>Volumes &amp; networks</strong> — persist data and wire services together</p>
+          <p><strong>Registries</strong> — push images to Docker Hub or a private registry for team sharing</p>
+        </div>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>Summary</span>
+      <span class="spacer"></span>
+      <span>Slide 18 / 19</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 19 — REFERENCES & CREDITS
+       To add a new entry: copy any <li> block and edit the text.
+       In edit mode (hover top-left or press E) you can edit inline.
+  ============================================== -->
+  <section class="slide" id="slide-19" aria-label="Slide 19: References">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Credits &amp; Further Reading</span></div>
+      <h2 class="slide-h2 reveal">References &amp; <span class="g">Credits</span></h2>
+
+      <div class="two-col reveal">
+
+        <!-- Left column: Learning resources -->
+        <div>
+          <div class="col-label">Learning Resources</div>
+          <ul class="bullet-list">
+            <li>
+              <span class="bul">▸</span>
+              <span><strong data-edit>TechWorld with Nana</strong><br>
+              <span style="color:var(--muted); font-size:0.9em;" data-edit>Docker Tutorial for Beginners — youtube.com/@TechWorldwithNana</span></span>
+            </li>
+            <li>
+              <span class="bul">▸</span>
+              <span><strong data-edit>Docker Official Documentation</strong><br>
+              <span style="color:var(--muted); font-size:0.9em;" data-edit>docs.docker.com</span></span>
+            </li>
+            <li>
+              <span class="bul">▸</span>
+              <span><strong data-edit>Play with Docker</strong><br>
+              <span style="color:var(--muted); font-size:0.9em;" data-edit>labs.play-with-docker.com — free in-browser Docker sandbox</span></span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Right column: Tools & Credits -->
+        <div>
+          <div class="col-label">Tools &amp; Credits</div>
+          <ul class="bullet-list">
+            <li>
+              <span class="bul">▸</span>
+              <span><strong data-edit>Claude Code</strong><br>
+              <span style="color:var(--muted); font-size:0.9em;" data-edit>Presentation generated with Claude Code — Anthropic</span></span>
+            </li>
+            <li>
+              <span class="bul">▸</span>
+              <span><strong data-edit>Docker Desktop</strong><br>
+              <span style="color:var(--muted); font-size:0.9em;" data-edit>docker.com/products/docker-desktop</span></span>
+            </li>
+            <!-- Add more credits below. Copy this <li> block to add a new entry. -->
+            <li>
+              <span class="bul">▸</span>
+              <span><strong data-edit>Add reference here</strong><br>
+              <span style="color:var(--muted); font-size:0.9em;" data-edit>Description or URL</span></span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>References</span>
+      <span class="spacer"></span>
+      <span>Slide 19 / 19</span>
+      <span>fin.</span>
+    </div>
+  </section>
+
+  <script>
+    /* ===========================================
+       SLIDE PRESENTATION CONTROLLER
+       Handles: navigation, animations, progress bar,
+       nav dots, keyboard & touch input.
+    =========================================== */
+    class SlidePresentation {
+      constructor() {
+        this.slides      = Array.from(document.querySelectorAll('.slide'));
+        this.total       = this.slides.length;
+        this.current     = 0;
+        this.progressBar = document.getElementById('progress-bar');
+        this.navDots     = document.getElementById('nav-dots');
+
+        this.buildNavDots();
+        this.initObserver();
+        this.initKeyboard();
+        this.initTouch();
+        this.initWheel();
+        this.updateProgress(0);
+      }
+
+      /* Build navigation dots */
+      buildNavDots() {
+        this.slides.forEach((_, i) => {
+          const dot = document.createElement('button');
+          dot.className = 'nav-dot';
+          dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+          dot.addEventListener('click', () => this.goTo(i));
+          this.navDots.appendChild(dot);
+        });
+      }
+
+      /* Intersection Observer: detects which slide is in view */
+      initObserver() {
+        const opts = { threshold: 0.5 };
+        const obs  = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              const idx = this.slides.indexOf(entry.target);
+              if (idx !== -1) {
+                this.current = idx;
+                this.updateProgress(idx);
+              }
+            }
+          });
+        }, opts);
+        this.slides.forEach(s => obs.observe(s));
+      }
+
+      /* Update progress bar and active dot */
+      updateProgress(idx) {
+        const pct = ((idx + 1) / this.total) * 100;
+        this.progressBar.style.width = pct + '%';
+        document.querySelectorAll('.nav-dot').forEach((d, i) => {
+          d.classList.toggle('active', i === idx);
+        });
+      }
+
+      /* Navigate to a specific slide */
+      goTo(idx) {
+        idx = Math.max(0, Math.min(this.total - 1, idx));
+        this.slides[idx].scrollIntoView({ behavior: 'smooth' });
+      }
+
+      /* Keyboard navigation */
+      initKeyboard() {
+        document.addEventListener('keydown', (e) => {
+          if (document.body.classList.contains('editing')) return;
+          const map = {
+            'ArrowDown': 1, 'ArrowRight': 1, ' ': 1,
+            'ArrowUp': -1, 'ArrowLeft': -1
+          };
+          if (e.key in map) {
+            e.preventDefault();
+            this.goTo(this.current + map[e.key]);
+          }
+        });
+      }
+
+      /* Touch / swipe navigation */
+      initTouch() {
+        let startY = 0, startX = 0;
+        document.addEventListener('touchstart', e => {
+          startY = e.touches[0].clientY;
+          startX = e.touches[0].clientX;
+        }, { passive: true });
+        document.addEventListener('touchend', e => {
+          const dy = startY - e.changedTouches[0].clientY;
+          const dx = startX - e.changedTouches[0].clientX;
+          if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 40) {
+            this.goTo(this.current + (dy > 0 ? 1 : -1));
+          }
+        }, { passive: true });
+      }
+
+      /* Mouse wheel navigation (debounced) */
+      initWheel() {
+        let lock = false;
+        document.addEventListener('wheel', (e) => {
+          if (lock) return;
+          lock = true;
+          this.goTo(this.current + (e.deltaY > 0 ? 1 : -1));
+          setTimeout(() => { lock = false; }, 800);
+        }, { passive: true });
+      }
+    }
+
+    /* ===========================================
+       INLINE EDIT MODE
+       Toggle with: hover top-left corner, or press E
+       Auto-saves to localStorage.
+       Export saves the file with current content.
+    =========================================== */
+    class InlineEditor {
+      constructor() {
+        this.isActive    = false;
+        this.STORAGE_KEY = 'docker-intro-edits';
+        this.editables   = Array.from(document.querySelectorAll('[data-edit]'));
+
+        // Make elements editable but off by default
+        this.editables.forEach(el => {
+          el.setAttribute('contenteditable', 'false');
+        });
+
+        this.restoreFromStorage();
+        this.initHotzone();
+        this.initKeyboard();
+        this.initToolbar();
+      }
+
+      /* Restore saved edits from localStorage */
+      restoreFromStorage() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}');
+          this.editables.forEach((el, i) => {
+            if (saved[i] !== undefined) el.innerHTML = saved[i];
+          });
+        } catch(e) { /* ignore */ }
+      }
+
+      /* Save current edits to localStorage */
+      saveToStorage() {
+        const data = {};
+        this.editables.forEach((el, i) => { data[i] = el.innerHTML; });
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+      }
+
+      /* Toggle edit mode on/off */
+      toggleEditMode() {
+        this.isActive = !this.isActive;
+        document.body.classList.toggle('editing', this.isActive);
+        const btn = document.getElementById('editToggle');
+        btn.classList.toggle('active', this.isActive);
+        btn.textContent = this.isActive ? '✓ Done' : '✏ Edit';
+        document.getElementById('editToolbar').classList.toggle('visible', this.isActive);
+
+        this.editables.forEach(el => {
+          el.setAttribute('contenteditable', this.isActive ? 'true' : 'false');
+        });
+
+        if (!this.isActive) this.saveToStorage();
+      }
+
+      /* Hotzone: hover top-left 80×80px corner to reveal button */
+      initHotzone() {
+        const hotzone   = document.getElementById('editHotzone');
+        const toggle    = document.getElementById('editToggle');
+        let hideTimeout = null;
+
+        const showBtn = () => {
+          clearTimeout(hideTimeout);
+          toggle.classList.add('show');
+        };
+        const scheduleHide = () => {
+          hideTimeout = setTimeout(() => {
+            if (!this.isActive) toggle.classList.remove('show');
+          }, 400);
+        };
+
+        hotzone.addEventListener('mouseenter', showBtn);
+        hotzone.addEventListener('mouseleave', scheduleHide);
+        hotzone.addEventListener('click', () => this.toggleEditMode());
+
+        toggle.addEventListener('mouseenter', showBtn);
+        toggle.addEventListener('mouseleave', scheduleHide);
+        toggle.addEventListener('click', () => this.toggleEditMode());
+      }
+
+      /* Press E to toggle (when not typing in an editable field) */
+      initKeyboard() {
+        document.addEventListener('keydown', (e) => {
+          if ((e.key === 'e' || e.key === 'E') &&
+              e.target.getAttribute('contenteditable') !== 'true') {
+            this.toggleEditMode();
+          }
+          // Ctrl+S to save
+          if ((e.ctrlKey || e.metaKey) && e.key === 's' && this.isActive) {
+            e.preventDefault();
+            this.saveToStorage();
+          }
+        });
+      }
+
+      /* Toolbar: Save (localStorage) + Export (download file) */
+      initToolbar() {
+        document.getElementById('btnSave').addEventListener('click', () => {
+          this.saveToStorage();
+          const btn = document.getElementById('btnSave');
+          btn.textContent = '✓ Saved!';
+          setTimeout(() => { btn.textContent = '💾 Save'; }, 1500);
+        });
+
+        document.getElementById('btnExport').addEventListener('click', () => {
+          // Temporarily disable editing, serialize HTML, re-enable
+          this.editables.forEach(el => el.setAttribute('contenteditable', 'false'));
+          const html   = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+          const blob   = new Blob([html], { type: 'text/html' });
+          const url    = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href  = url;
+          anchor.download = 'docker-intro.html';
+          anchor.click();
+          URL.revokeObjectURL(url);
+          if (this.isActive) {
+            this.editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+          }
+        });
+      }
+    }
+
+    /* ===========================================
+       THEME TOGGLE
+       Switches between dark (default) and light mode.
+       Preference saved to localStorage.
+    =========================================== */
+    class ThemeToggle {
+      constructor() {
+        this.btn     = document.getElementById('themeToggle');
+        this.isLight = localStorage.getItem('docker-intro-theme') === 'light';
+        if (this.isLight) this.apply();
+        this.btn.addEventListener('click', () => this.toggle());
+        // Keyboard shortcut: L
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'l' || e.key === 'L') {
+            if (!document.body.classList.contains('editing')) this.toggle();
+          }
+        });
+      }
+      apply() {
+        document.body.classList.toggle('light-mode', this.isLight);
+        this.btn.textContent = this.isLight ? '🌙 Dark' : '☀ Light';
+      }
+      toggle() {
+        this.isLight = !this.isLight;
+        localStorage.setItem('docker-intro-theme', this.isLight ? 'light' : 'dark');
+        this.apply();
+      }
+    }
+
+    /* ===========================================
+       INITIALISE
+    =========================================== */
+    const presentation = new SlidePresentation();
+    const editor       = new InlineEditor();
+    const theme        = new ThemeToggle();
+  </script>
+</body>
+</html>

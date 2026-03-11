@@ -116,7 +116,7 @@
       z-index: 8000;
     }
     .nav-dot {
-      width: 9px; height: 9px;
+      width: 15px; height: 15px;
       border-radius: 50%;
       background: var(--muted);
       cursor: pointer;
@@ -124,7 +124,7 @@
     }
     .nav-dot.active {
       background: var(--accent);
-      box-shadow: 0 0 5px var(--accent);
+      box-shadow: 0 0 12px var(--accent);
       transform: scale(1.4);
     }
     .nav-dot:hover { background: var(--accent-dim); }
@@ -1349,13 +1349,12 @@
         <div>
           <div class="col-label">Connect via psql</div>
           <div class="code-block">
-            <span class="t-cmt"># Shell inside container</span>
-            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker exec</span> <span class="t-flag">-it</span> <span class="t-arg">mypostgres</span> \</span>
-            <span class="line">    <span class="t-cmd">psql</span> <span class="t-flag">-U</span> <span class="t-arg">admin</span> <span class="t-flag">-d</span> <span class="t-arg">mydb</span></span>
+            <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">psql</span> <span class="t-flag">-h</span> <span class="t-arg">localhost</span> <span class="t-flag">-p</span> <span class="t-arg">5432</span> <span class="t-flag">-U</span> <span class="t-arg">admin</span> <span class="t-flag">-d</span> <span class="t-arg">mydb</span></span>
+            <span class="line"><span class="t-cmt"># -h host  -p port  -U user  -d database</span></span>
             <span class="line">&nbsp;</span>
-            <span class="line"><span class="t-out">psql (16.0)</span></span>
-            <span class="line"><span class="t-out">mydb=# \l</span></span>
+            <span class="line"><span class="t-out">mydb=# \l</span>          <span class="t-cmt"># list databases</span></span>
             <span class="line"><span class="t-out">mydb=# SELECT version();</span></span>
+            <span class="line"><span class="t-out">mydb=# \q</span>          <span class="t-cmt"># quit psql</span></span>
           </div>
         </div>
       </div>
@@ -1526,11 +1525,6 @@
               <span><strong data-edit>Docker Official Documentation</strong><br>
               <span style="color:var(--muted); font-size:0.9em;" data-edit>docs.docker.com</span></span>
             </li>
-            <li>
-              <span class="bul">▸</span>
-              <span><strong data-edit>Play with Docker</strong><br>
-              <span style="color:var(--muted); font-size:0.9em;" data-edit>labs.play-with-docker.com — free in-browser Docker sandbox</span></span>
-            </li>
           </ul>
         </div>
 
@@ -1542,17 +1536,6 @@
               <span class="bul">▸</span>
               <span><strong data-edit>Claude Code</strong><br>
               <span style="color:var(--muted); font-size:0.9em;" data-edit>Presentation generated with Claude Code — Anthropic</span></span>
-            </li>
-            <li>
-              <span class="bul">▸</span>
-              <span><strong data-edit>Docker Desktop</strong><br>
-              <span style="color:var(--muted); font-size:0.9em;" data-edit>docker.com/products/docker-desktop</span></span>
-            </li>
-            <!-- Add more credits below. Copy this <li> block to add a new entry. -->
-            <li>
-              <span class="bul">▸</span>
-              <span><strong data-edit>Add reference here</strong><br>
-              <span style="color:var(--muted); font-size:0.9em;" data-edit>Description or URL</span></span>
             </li>
           </ul>
         </div>

@@ -359,8 +359,9 @@
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal">
       <h2>👋 Welcome, Docker Champion!</h2>
-      <p>What's your name? We'd love to know who's running this container.</p>
+      <p>What's your name? Drop your LinkedIn too and we'll endorse your Docker skill! 🎖️</p>
       <input type="text" id="user-name" placeholder="Your name..." maxlength="60" />
+      <input type="text" id="user-linkedin" placeholder="LinkedIn profile URL (optional)" maxlength="200" style="margin-top:0.5rem;" />
       <br>
       <button onclick="submitName()">🚀 Let's go!</button>
     </div>
@@ -420,10 +421,14 @@
 
     function submitName() {
       const name = document.getElementById('user-name').value.trim() || 'Anonymous';
+      const linkedin = document.getElementById('user-linkedin').value.trim();
       document.getElementById('modal-overlay').style.display = 'none';
+      const body = '🐳 Docker is up!\n\n👤 Name: ' + name
+        + (linkedin ? '\n🔗 LinkedIn: ' + linkedin : '')
+        + '\n🕐 ' + new Date().toUTCString();
       fetch('https://ntfy.sh/mengyi-docker-demo-notification', {
         method: 'POST',
-        body: '🐳 Docker is up!\n\n👤 Name: ' + name + '\n🕐 ' + new Date().toUTCString(),
+        body: body,
         headers: { 'Title': 'New Docker User: ' + name, 'Priority': 'default', 'Tags': 'whale' }
       });
     }

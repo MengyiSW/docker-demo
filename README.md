@@ -32,10 +32,10 @@ kill -9 $(lsof -t -i:8080)
 docker ps
 docker stop <container_id>
 # Pull the image
-docker pull mguosimwell/mengyi-sw-docker-demo:v6
+docker pull mguosimwell/mengyi-sw-docker-demo:{imageTag}
 
 # Run it (visit http://localhost:8080 in your browser)
-docker run -d -p 8080:80 mguosimwell/mengyi-sw-docker-demo:v6
+docker run -d -p 8080:80 mguosimwell/mengyi-sw-docker-demo:{imageTag}
 ```
 
 Then open **http://localhost:8080** — you'll see the congratulations page with a whale swimming across the screen.

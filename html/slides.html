@@ -116,18 +116,26 @@
       z-index: 8000;
     }
     .nav-dot {
-      width: 15px; height: 15px;
+      width: 28px; height: 28px;
       border-radius: 50%;
-      background: var(--muted);
+      background: transparent;
+      border: 1px solid var(--muted);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s, color 0.2s, border-color 0.2s;
     }
     .nav-dot.active {
       background: var(--accent);
+      border-color: var(--accent);
+      color: #050f07;
       box-shadow: 0 0 12px var(--accent);
-      transform: scale(1.4);
+      transform: scale(1.2);
     }
-    .nav-dot:hover { background: var(--accent-dim); }
+    .nav-dot:hover { border-color: var(--accent-dim); color: var(--accent-dim); }
 
     /* ===========================================
        SLIDE BASE — CRITICAL: 100vh, overflow hidden
@@ -1578,6 +1586,7 @@
           const dot = document.createElement('button');
           dot.className = 'nav-dot';
           dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+          dot.textContent = i + 1;
           dot.addEventListener('click', () => this.goTo(i));
           this.navDots.appendChild(dot);
         });

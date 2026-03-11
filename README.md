@@ -19,13 +19,23 @@ Image size is tiny — no runtime dependencies beyond nginx.
 ---
 
 ## Quick start
+In your ubuntu
 
 ```bash
+# Check if port 8080 is already in use
+lsof -i :8080
+
+# If something is using it, stop the process
+kill -9 $(lsof -t -i:8080)
+
+# If the port is used by a Docker container instead, stop it with:
+docker ps
+docker stop <container_id>
 # Pull the image
-docker pull mguosimwell/mengyi-sw-docker-demo
+docker pull mguosimwell/mengyi-sw-docker-demo:v6
 
 # Run it (visit http://localhost:8080 in your browser)
-docker run -d -p 8080:80 mguosimwell/mengyi-sw-docker-demo
+docker run -d -p 8080:80 mguosimwell/mengyi-sw-docker-demo:v6
 ```
 
 Then open **http://localhost:8080** — you'll see the congratulations page with a whale swimming across the screen.

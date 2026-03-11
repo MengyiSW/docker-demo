@@ -893,7 +893,7 @@
           <span class="step-num">4</span>
           <div class="step-content">
             <strong>Demo + Challenge</strong>
-            <span class="s-sub">Run PostgreSQL live — then win the prize 🏆</span>
+            <span class="s-sub">Run PostgreSQL live — Compete for LinkedIn Docker skill endorsement 🏆</span>
           </div>
         </li>
         <li>
@@ -1023,7 +1023,7 @@
             <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Since macOS has no Linux kernel, Docker Desktop spins up a small <strong style="color:var(--white)">Linux VM</strong> behind the scenes. Docker Engine runs inside it — you never notice it's there.</p>
             <div class="examples" style="margin-top:0.5rem;">
               <span class="ex-pill">Linux VM</span>
-              <span class="ex-pill">Transparent to user</span>
+              <span class="ex-pill">Docker Desktop</span>
             </div>
           </div>
         </div>
@@ -1031,9 +1031,8 @@
           <div class="col-label">🪟 Windows</div>
           <div class="term-card">
             <div class="term-tag">Desktop / WSL2</div>
-            <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Windows needs the same Linux layer. The easiest option is <strong style="color:var(--white)">Docker Desktop</strong>, which uses WSL2 under the hood. Prefer no GUI? Install Docker Engine directly inside a WSL2 Linux distro.</p>
+            <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Windows needs the same Linux layer. DInstall Docker Engine directly inside a WSL2 Linux distro. <strong style="color:#e53e3e;"> ⚠️ DO NOT USE DOCKER DESKTOP!</strong></p>
             <div class="examples" style="margin-top:0.5rem;">
-              <span class="ex-pill">Docker Desktop</span>
               <span class="ex-pill">WSL2 Engine</span>
             </div>
           </div>
@@ -1231,39 +1230,39 @@
   </section>
 
   <!-- =============================================
-       SLIDE 12 — INSTALL DOCKER DESKTOP
+       SLIDE 12 — INSTALL DOCKER ENGINE (WSL2 CLI)
   ============================================== -->
   <section class="slide" id="slide-12" aria-label="Slide 12: Installation">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Setup</span></div>
-      <h2 class="slide-h2 reveal">Installing <span class="g">Docker Desktop</span></h2>
+      <h2 class="slide-h2 reveal">Installing Docker Engine <span class="g">via WSL2</span></h2>
       <ol class="step-list reveal">
         <li>
           <span class="step-num">1</span>
           <div class="step-content">
             <strong>Enable WSL2</strong>
-            <span class="s-sub"><code>wsl --install</code> in PowerShell (as Admin), then reboot</span>
+            <span class="s-sub">Run <code>wsl --install</code> in PowerShell (as Admin) and reboot — Ubuntu is installed by default</span>
           </div>
         </li>
         <li>
           <span class="step-num">2</span>
           <div class="step-content">
-            <strong>Download Docker Desktop</strong>
-            <span class="s-sub">From <code>docker.com/products/docker-desktop</code> — choose the Windows installer</span>
+            <strong>Install Docker Engine for Ubuntu</strong>
+            <span class="s-sub">Follow the official guide at <code>docs.docker.com/engine/install/ubuntu</code> inside your WSL2 terminal</span>
           </div>
         </li>
         <li>
           <span class="step-num">3</span>
           <div class="step-content">
-            <strong>Install &amp; configure</strong>
-            <span class="s-sub">Run the installer, ensure "Use WSL 2 instead of Hyper-V" is checked</span>
+            <strong>Verify Docker is installed</strong>
+            <span class="s-sub"><code>docker --version</code> and <code>docker info</code> — confirm the daemon is running</span>
           </div>
         </li>
         <li>
           <span class="step-num">4</span>
           <div class="step-content">
-            <strong>Verify installation</strong>
-            <span class="s-sub">Open any terminal and run <code>docker --version</code> and <code>docker run hello-world</code></span>
+            <strong>Launch your first container</strong>
+            <span class="s-sub"><code>docker run hello-world</code> — Docker pulls the image and prints a success message</span>
           </div>
         </li>
       </ol>
@@ -1288,18 +1287,10 @@
       <div class="code-block reveal">
         <div class="cb-label">Terminal</div>
         <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker pull</span> <span class="t-arg">postgres:16</span></span>
-        <span class="line">&nbsp;</span>
-        <span class="line"><span class="t-out">16: Pulling from library/postgres</span></span>
-        <span class="line"><span class="t-out">a378f10b3218: Pull complete</span></span>
-        <span class="line"><span class="t-out">bab6e940cb65: Pull complete</span></span>
-        <span class="line"><span class="t-out">Status: Downloaded newer image for postgres:16</span></span>
-        <span class="line"><span class="t-out">docker.io/library/postgres:16</span></span>
       </div>
       <div class="code-block reveal" style="margin-top:var(--gap);">
         <div class="cb-label">Verify image is local</div>
         <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker images</span> <span class="t-arg">postgres</span></span>
-        <span class="line"><span class="t-out">REPOSITORY   TAG   IMAGE ID       CREATED       SIZE</span></span>
-        <span class="line"><span class="t-out">postgres     16    a3f9c84b1e22   2 weeks ago   428MB</span></span>
       </div>
     </div>
     <div class="statusbar">
@@ -1350,9 +1341,6 @@
           <div class="col-label">Check it's running</div>
           <div class="code-block">
             <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker ps</span></span>
-            <span class="line"><span class="t-out">CONTAINER ID IMAGE      STATUS</span></span>
-            <span class="line"><span class="t-out">d7f3a1b2e9c4 postgres:16 Up 30s  mypostgres</span></span>
-            <span class="line">&nbsp;</span>
             <span class="t-cmt"># Stop and remove</span>
             <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker stop</span> <span class="t-arg">mypostgres</span></span>
             <span class="line"><span class="t-prompt">$</span> <span class="t-cmd">docker rm</span>   <span class="t-arg">mypostgres</span></span>
@@ -1395,7 +1383,7 @@
       <div class="code-block reveal" style="margin-bottom:var(--gap);">
         <div class="cb-label">Target Repository</div>
         <span class="line" style="font-size:var(--h3-size); letter-spacing:0.02em;">
-          <span class="t-hl" data-edit>your-username/your-image:tag</span><span class="cursor-blink"></span>
+          <span class="t-hl" data-edit>mguosimwell/mengyi-sw-docker-demo</span><span class="cursor-blink"></span>
         </span>
       </div>
       <ul class="bullet-list reveal">

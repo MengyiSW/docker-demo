@@ -10,8 +10,14 @@ COPY html/ /usr/share/nginx/html/
 EXPOSE 80
 
 # nginx runs by default; no CMD needed
-
-CMD echo "🚀 Hey you are one step closer!" \
- && echo "✅ The app has been successfully started." \
- && echo "🌐 Open your browser at: http://localhost:8080" \
+CMD echo "" \
+ && echo "========================================" \
+ && echo "😎 Hey SimWellers!" \
+ && echo "🚀 Docker Demo Container Started" \
+ && echo "" \
+ && echo "Open your browser:" \
+ && echo "👉 http://localhost:8080" \
+ && echo "" \
+ && echo "Enjoy the demo!" \
+ && echo "========================================" \
  && nginx -g 'daemon off;'

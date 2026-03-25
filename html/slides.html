@@ -359,6 +359,186 @@
     .bullet-list li span { color: var(--text); }
 
     /* ===========================================
+       SLIDE 5: images enter from opposite sides (before ← left, after → right)
+    =========================================== */
+    .img-from-left {
+      opacity: 0;
+      transform: translateX(-70px);
+      transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.7s cubic-bezier(0.16,1,0.3,1);
+    }
+    .img-from-right {
+      opacity: 0;
+      transform: translateX(70px);
+      transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.7s cubic-bezier(0.16,1,0.3,1);
+      transition-delay: 0.18s;
+    }
+    .slide.visible .img-from-left,
+    .slide.visible .img-from-right {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ===========================================
+       SLIDE 7A: staggered card entrance (Linux → macOS → Windows)
+    =========================================== */
+    .platform-col {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.55s cubic-bezier(0.16,1,0.3,1);
+    }
+    .slide.visible .platform-col-1 { opacity: 1; transform: none; transition-delay: 0.1s; }
+    .slide.visible .platform-col-2 { opacity: 1; transform: none; transition-delay: 0.3s; }
+    .slide.visible .platform-col-3 { opacity: 1; transform: none; transition-delay: 0.5s; }
+
+    /* SLIDE 7C: focus dimming — hover one card, others dim */
+    .platform-grid:has(.platform-col:hover) .platform-col {
+      opacity: 0.25;
+      transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .platform-grid:has(.platform-col:hover) .platform-col:hover {
+      opacity: 1;
+      transform: scale(1.03);
+    }
+    .platform-grid .platform-col { transition: opacity 0.25s ease, transform 0.25s ease; }
+
+    /* SLIDE 7: Docker Client vs Server bar */
+    .client-server-bar {
+      display: flex;
+      align-items: center;
+      gap: clamp(0.5rem, 1.5vw, 1.25rem);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: clamp(0.5rem, 1vw, 0.85rem) clamp(0.75rem, 1.5vw, 1.25rem);
+    }
+    .cs-side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.2rem;
+    }
+    .cs-icon { font-size: clamp(1.1rem, 2vw, 1.5rem); }
+    .cs-label {
+      font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 0.03em;
+    }
+    .cs-code {
+      font-family: var(--font-mono);
+      font-size: clamp(0.75rem, 1.2vw, 1rem);
+      color: var(--accent);
+      background: rgba(255,255,255,0.06);
+      padding: 0.1em 0.5em;
+      border-radius: 4px;
+    }
+    .cs-client .cs-code { color: #6dd6ff; }  /* blue for client */
+    .cs-server .cs-code { color: var(--accent); }  /* yellow/accent for server */
+    .cs-desc {
+      font-size: clamp(0.62rem, 0.95vw, 0.78rem);
+      color: var(--muted);
+      line-height: 1.4;
+      max-width: 22ch;
+    }
+    .cs-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      flex-shrink: 0;
+    }
+    .cs-arrow-line {
+      display: block;
+      width: clamp(2.5rem, 5vw, 4rem);
+      height: 2px;
+      background: linear-gradient(90deg, #6dd6ff, var(--accent));
+      border-radius: 1px;
+      position: relative;
+    }
+    .cs-arrow-line::after {
+      content: '▶';
+      position: absolute;
+      right: -0.6em;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.65rem;
+      color: var(--accent);
+    }
+    .cs-arrow-label {
+      font-size: clamp(0.58rem, 0.85vw, 0.7rem);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+    }
+
+    /* SLIDE 7: Option D — alternating glow ping (Client → socket → Server) */
+    /* Give each side a border + radius so the glow has something to highlight */
+    .cs-side {
+      border-radius: 8px;
+      border: 1px solid transparent;
+      padding: 0.35rem 0.5rem;
+    }
+
+    @keyframes csPingClient {
+      0%   { background: rgba(109,214,255,0.10); border-color: rgba(109,214,255,0.5);
+             box-shadow: 0 0 18px rgba(109,214,255,0.18); }
+      22%  { background: transparent; border-color: transparent; box-shadow: none; }
+      100% { background: transparent; border-color: transparent; box-shadow: none; }
+    }
+    @keyframes csPingArrow {
+      0%,  28% { filter: brightness(0.55); }
+      38%      { filter: brightness(2.8) drop-shadow(0 0 5px #6dd6ff); }
+      52%      { filter: brightness(0.55); }
+      100%     { filter: brightness(0.55); }
+    }
+    @keyframes csPingServer {
+      0%,  50% { background: transparent; border-color: transparent; box-shadow: none; }
+      62%      { background: rgba(255,211,109,0.10); border-color: rgba(255,211,109,0.5);
+                 box-shadow: 0 0 18px rgba(255,211,109,0.18); }
+      80%      { background: transparent; border-color: transparent; box-shadow: none; }
+      100%     { background: transparent; border-color: transparent; box-shadow: none; }
+    }
+
+    /* Trigger after bar has entered (~0.9s after slide becomes visible) */
+    .slide.visible .client-server-bar .cs-client {
+      animation: csPingClient 3s ease-in-out 0.9s infinite;
+    }
+    .slide.visible .client-server-bar .cs-arrow-line {
+      animation: csPingArrow 3s ease-in-out 0.9s infinite;
+    }
+    .slide.visible .client-server-bar .cs-server {
+      animation: csPingServer 3s ease-in-out 0.9s infinite;
+    }
+
+    /* ===========================================
+       SLIDE 6: images drop from above with spring bounce, staggered
+    =========================================== */
+    .img-drop-1 {
+      opacity: 0;
+      transform: translateY(-55px) scale(0.9);
+      transition: opacity 0.65s cubic-bezier(0.34,1.56,0.64,1),
+                  transform 0.65s cubic-bezier(0.34,1.56,0.64,1);
+      transition-delay: 0.1s;
+    }
+    .img-drop-2 {
+      opacity: 0;
+      transform: translateY(-55px) scale(0.9);
+      transition: opacity 0.65s cubic-bezier(0.34,1.56,0.64,1),
+                  transform 0.65s cubic-bezier(0.34,1.56,0.64,1);
+      transition-delay: 0.38s;
+    }
+    .slide.visible .img-drop-1,
+    .slide.visible .img-drop-2 {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* ===========================================
        DIAGRAM IMAGE LAYOUT
        Used on slides that pair text with diagrams
     =========================================== */
@@ -395,6 +575,17 @@
       border-radius: 8px;
       border: 1px solid var(--green-muted);
       box-shadow: 0 0 20px rgba(0, 255, 65, 0.07);
+      cursor: pointer;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .slide-diagram-img:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green),
+                  0 0 40px rgba(0, 255, 65, 0.6),
+                  0 0 80px rgba(0, 255, 65, 0.25);
+      transform: scale(1.06);
+      z-index: 10;
+      position: relative;
     }
 
     /* ===========================================
@@ -644,6 +835,40 @@
     }
     .step-content strong { color: var(--white); display: block; font-weight: 500; margin-bottom: 0.1rem; }
     .step-content .s-sub { color: var(--muted); font-size: 0.9em; }
+
+    /* ===========================================
+       SLIDE 2 — AGENDA ROW HOVER UNDERLINE
+       Each row gets a sliding underline that grows
+       left-to-right on hover using a ::after pseudo.
+    =========================================== */
+    #slide-2 .step-list li {
+      position: relative;
+      padding-bottom: 0.45rem;
+      transition: color 0.2s ease;
+    }
+    #slide-2 .step-list li::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0;
+      height: 1.5px;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent-dim);
+      transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #slide-2 .step-list li:hover::after {
+      width: 100%;
+    }
+    #slide-2 .step-list li:hover .step-num {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: 0 0 10px var(--accent-dim);
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    #slide-2 .step-list li:hover strong {
+      color: var(--accent);
+      transition: color 0.2s;
+    }
 
     /* ===========================================
        ARCHITECTURE DIAGRAM (text-based)
@@ -1281,9 +1506,9 @@
     <div class="slide-inner" style="justify-content: center; align-items: center;">
       <div class="eyebrow reveal" style="margin-bottom: clamp(0.4rem,0.8vh,0.7rem);"><span class="e-accent">Motivation</span></div>
       <h2 class="slide-h2 reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.2rem);">Why Use Docker in <span class="g">Development?</span></h2>
-      <div class="split-imgs reveal" style="display: flex; flex-direction: row; gap: clamp(1rem, 2vw, 2rem); max-height: min(58vh, 440px); align-items: center;">
-        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/development-before-containers.png" alt="Application development before containers">
-        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/development-after-containers.png" alt="Application development after containers">
+      <div class="split-imgs" style="display: flex; flex-direction: row; gap: clamp(1rem, 2vw, 2rem); max-height: min(58vh, 440px); align-items: center;">
+        <img class="slide-diagram-img img-from-left" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/development-before-containers.png" alt="Application development before containers">
+        <img class="slide-diagram-img img-from-right" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/development-after-containers.png" alt="Application development after containers">
       </div>
     </div>
     <div class="statusbar">
@@ -1300,9 +1525,9 @@
     <div class="slide-inner" style="justify-content: center; align-items: center;">
       <div class="eyebrow reveal" style="margin-bottom: clamp(0.4rem,0.8vh,0.7rem);"><span class="e-accent">Motivation</span></div>
       <h2 class="slide-h2 reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.2rem);">Why Use Docker in <span class="g">Deployment?</span></h2>
-      <div class="split-imgs reveal" style="display: flex; flex-direction: row; gap: clamp(1rem, 2vw, 2rem); max-height: min(58vh, 440px); align-items: center;">
-        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/deployment-before-containers.png" alt="Application deployment before containers">
-        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/deployment-after-containers.png" alt="Application deployment after containers">
+      <div class="split-imgs" style="display: flex; flex-direction: row; gap: clamp(1rem, 2vw, 2rem); max-height: min(58vh, 440px); align-items: center;">
+        <img class="slide-diagram-img img-drop-1" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/deployment-before-containers.png" alt="Application deployment before containers">
+        <img class="slide-diagram-img img-drop-2" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/deployment-after-containers.png" alt="Application deployment after containers">
       </div>
     </div>
     <div class="statusbar">
@@ -1319,15 +1544,22 @@
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Platform</span></div>
       <h2 class="slide-h2 reveal">Docker on <span class="g">Linux, Mac &amp; Windows</span></h2>
-      <p class="subtitle reveal" style="margin-bottom:clamp(0.5rem,1vh,0.75rem);" data-edit>
-        <strong style="color:var(--white)">Docker Engine</strong> (<code>dockerd</code>) is the server-side daemon that actually builds and runs containers. Where it runs depends on your OS.
-      </p>
-      <div class="reveal" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:clamp(0.75rem,1.5vw,1.5rem); align-items:start;">
-        <div>
+      <div class="platform-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:clamp(0.75rem,1.5vw,1.5rem); align-items:start;">
+        <div class="platform-col platform-col-1">
           <div class="col-label">🐧 Linux</div>
           <div class="term-card">
             <div class="term-tag">Native</div>
-            <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Docker Engine runs <strong style="color:var(--white)">natively on the host OS</strong>. Containers use Linux kernel features (cgroups, namespaces) directly — no VM, no overhead.</p>
+            <p style="font-size:var(--body-size); color:var(--text); line-height:1.5;" data-edit>Docker Engine runs <strong style="color:var(--white)">natively on the host OS</strong>. Containers use two Linux kernel features directly — no VM, no overhead.</p>
+            <div style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.3rem;">
+              <div style="display:flex; align-items:baseline; gap:0.5rem;">
+                <span style="font-family:var(--font-mono); font-size:var(--code-size); color:var(--accent); font-weight:600; white-space:nowrap;">cgroups</span>
+                <span style="font-size:calc(var(--small-size)*0.95); color:var(--muted);">— resource limits (CPU, memory)</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:0.5rem;">
+                <span style="font-family:var(--font-mono); font-size:var(--code-size); color:var(--accent); font-weight:600; white-space:nowrap;">namespaces</span>
+                <span style="font-size:calc(var(--small-size)*0.95); color:var(--muted);">— isolation (filesystem, network, processes)</span>
+              </div>
+            </div>
             <div class="examples" style="margin-top:0.5rem;">
               <span class="ex-pill">dockerd on host</span>
               <span class="ex-pill">No VM</span>
@@ -1335,7 +1567,7 @@
             </div>
           </div>
         </div>
-        <div>
+        <div class="platform-col platform-col-2">
           <div class="col-label">🍎 macOS</div>
           <div class="term-card">
             <div class="term-tag">Docker Desktop</div>
@@ -1346,7 +1578,7 @@
             </div>
           </div>
         </div>
-        <div>
+        <div class="platform-col platform-col-3">
           <div class="col-label">🪟 Windows</div>
           <div class="term-card">
             <div class="term-tag">Desktop / WSL2</div>
@@ -1357,8 +1589,24 @@
           </div>
         </div>
       </div>
-      <div class="analogy reveal" style="margin-top:clamp(0.5rem,1vh,0.75rem);">
-        <strong>Key insight:</strong> The Docker CLI is just a client — it talks to <code>dockerd</code> via a socket. Whether that daemon runs on bare metal or inside a VM is completely transparent to you.
+      <!-- Docker Client vs Server bar -->
+      <div class="client-server-bar reveal" style="margin-top:clamp(0.5rem,1vh,0.75rem);">
+        <div class="cs-side cs-client">
+          <span class="cs-icon">💻</span>
+          <div class="cs-label">Docker Client</div>
+          <code class="cs-code">docker</code>
+          <div class="cs-desc">Your terminal — sends commands via socket</div>
+        </div>
+        <div class="cs-arrow">
+          <span class="cs-arrow-line"></span>
+          <span class="cs-arrow-label">socket</span>
+        </div>
+        <div class="cs-side cs-server">
+          <span class="cs-icon">⚙️</span>
+          <div class="cs-label">Docker Server</div>
+          <code class="cs-code">dockerd</code>
+          <div class="cs-desc">Daemon that actually builds &amp; runs containers — where it runs depends on your OS</div>
+        </div>
       </div>
     </div>
     <div class="statusbar">
@@ -1917,6 +2165,7 @@
                 this.current = idx;
                 this.updateProgress(idx);
               }
+
             }
           });
         }, opts);
@@ -1979,6 +2228,8 @@
           setTimeout(() => { lock = false; }, 800);
         }, { passive: true });
       }
+
+
     }
 
     /* ===========================================

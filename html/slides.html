@@ -126,6 +126,7 @@
       font-weight: 500;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
+      position: relative;
       transition: background 0.2s, box-shadow 0.2s, transform 0.2s, color 0.2s, border-color 0.2s;
     }
     .nav-dot.active {
@@ -136,6 +137,55 @@
       transform: scale(1.2);
     }
     .nav-dot:hover { border-color: var(--accent-dim); color: var(--accent-dim); }
+
+    /* Speaker change dot — blue, indicates handoff to another presenter */
+    .nav-dot--speaker {
+      border-color: var(--blue);
+      color: var(--blue);
+      border-width: 2px;
+      box-shadow: 0 0 8px rgba(109, 214, 255, 0.4);
+    }
+    .nav-dot--speaker::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px dashed rgba(109, 214, 255, 0.5);
+      animation: challengePulse 2s ease-in-out infinite;
+    }
+    .nav-dot--speaker.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #050f07;
+      box-shadow: 0 0 14px rgba(109, 214, 255, 0.6);
+    }
+
+    /* Challenge slide dot — stands out for the speaker */
+    .nav-dot--challenge {
+      border-color: var(--yellow);
+      color: var(--yellow);
+      border-style: solid;
+      border-width: 2px;
+      box-shadow: 0 0 8px rgba(255, 211, 109, 0.4);
+    }
+    .nav-dot--challenge::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 211, 109, 0.5);
+      animation: challengePulse 2s ease-in-out infinite;
+    }
+    @keyframes challengePulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.15); }
+    }
+    .nav-dot--challenge.active {
+      background: var(--yellow);
+      border-color: var(--yellow);
+      color: #050f07;
+      box-shadow: 0 0 14px rgba(255, 211, 109, 0.6);
+    }
 
     /* ===========================================
        SLIDE BASE — CRITICAL: 100vh, overflow hidden
@@ -654,48 +704,48 @@
        Yellow → Orange → Blue cycling every 3 slides.
     =========================================== */
 
-    /* Green: slides 1, 2, 16, 17, 18 */
-    #slide-1, #slide-2, #slide-16, #slide-17, #slide-18 {
+    /* Green: slides 1, 2, 17, 18, 19 */
+    #slide-1, #slide-2, #slide-17, #slide-18, #slide-19 {
       --accent:       #00ff41;
       --accent-dim:   rgba(0, 255, 65, 0.45);
       --accent-muted: rgba(0, 255, 65, 0.18);
       --accent-faint: rgba(0, 255, 65, 0.06);
     }
 
-    /* Yellow: slide 6 */
-    #slide-6 {
+    /* Yellow: slide 7 */
+    #slide-7 {
       --accent:       #ffd36d;
       --accent-dim:   rgba(255, 211, 109, 0.45);
       --accent-muted: rgba(255, 211, 109, 0.22);
       --accent-faint: rgba(255, 211, 109, 0.07);
     }
 
-    /* Orange: slides 7, 8, 9, 10, 11 */
-    #slide-7, #slide-8, #slide-9, #slide-10, #slide-11 {
+    /* Orange: slides 8, 9, 10, 11, 12 */
+    #slide-8, #slide-9, #slide-10, #slide-11, #slide-12 {
       --accent:       #ff8c42;
       --accent-dim:   rgba(255, 140, 66, 0.45);
       --accent-muted: rgba(255, 140, 66, 0.22);
       --accent-faint: rgba(255, 140, 66, 0.07);
     }
 
-    /* Blue: slides 3, 4, 5, 13, 14, 15 */
-    #slide-3, #slide-4, #slide-5, #slide-13, #slide-14, #slide-15 {
+    /* Blue: slides 3, 4, 5, 6, 14, 15, 16 */
+    #slide-3, #slide-4, #slide-5, #slide-6, #slide-14, #slide-15, #slide-16 {
       --accent:       #6dd6ff;
       --accent-dim:   rgba(109, 214, 255, 0.45);
       --accent-muted: rgba(109, 214, 255, 0.22);
       --accent-faint: rgba(109, 214, 255, 0.07);
     }
 
-    /* Purple: slide 19 (References) */
-    #slide-19 {
+    /* Purple: slide 20 (References) */
+    #slide-20 {
       --accent:       #b57aff;
       --accent-dim:   rgba(181, 122, 255, 0.45);
       --accent-muted: rgba(181, 122, 255, 0.22);
       --accent-faint: rgba(181, 122, 255, 0.07);
     }
 
-    /* Pink: slide 12 */
-    #slide-12 {
+    /* Pink: slide 13 */
+    #slide-13 {
       --accent:       #ff6eb4;
       --accent-dim:   rgba(255, 110, 180, 0.45);
       --accent-muted: rgba(255, 110, 180, 0.22);
@@ -796,61 +846,62 @@
     /* Per-slide accent overrides for light mode
        Each neon color is replaced with a dark, readable equivalent */
 
-    /* Green slides (1, 2, 16, 17, 18) → dark forest green */
+    /* Green slides (1, 2, 17, 18, 19) → dark forest green */
     body.light-mode #slide-1,
     body.light-mode #slide-2,
-    body.light-mode #slide-16,
     body.light-mode #slide-17,
-    body.light-mode #slide-18 {
+    body.light-mode #slide-18,
+    body.light-mode #slide-19 {
       --accent:       #007a1e;
       --accent-dim:   rgba(0, 122, 30, 0.3);
       --accent-muted: rgba(0, 122, 30, 0.2);
       --accent-faint: rgba(0, 122, 30, 0.06);
     }
 
-    /* Yellow slide (6) → dark amber */
-    body.light-mode #slide-6 {
+    /* Yellow slide (7) → dark amber */
+    body.light-mode #slide-7 {
       --accent:       #7a5a00;
       --accent-dim:   rgba(122, 90, 0, 0.3);
       --accent-muted: rgba(122, 90, 0, 0.2);
       --accent-faint: rgba(122, 90, 0, 0.06);
     }
 
-    /* Orange slides (7, 8, 9, 10, 11) → dark burnt orange */
-    body.light-mode #slide-7,
+    /* Orange slides (8, 9, 10, 11, 12) → dark burnt orange */
     body.light-mode #slide-8,
     body.light-mode #slide-9,
     body.light-mode #slide-10,
-    body.light-mode #slide-11 {
+    body.light-mode #slide-11,
+    body.light-mode #slide-12 {
       --accent:       #b84400;
       --accent-dim:   rgba(184, 68, 0, 0.3);
       --accent-muted: rgba(184, 68, 0, 0.2);
       --accent-faint: rgba(184, 68, 0, 0.06);
     }
 
-    /* Blue slides (3, 4, 5, 13, 14, 15) → dark navy blue */
+    /* Blue slides (3, 4, 5, 6, 14, 15, 16) → dark navy blue */
     body.light-mode #slide-3,
     body.light-mode #slide-4,
     body.light-mode #slide-5,
-    body.light-mode #slide-13,
+    body.light-mode #slide-6,
     body.light-mode #slide-14,
-    body.light-mode #slide-15 {
+    body.light-mode #slide-15,
+    body.light-mode #slide-16 {
       --accent:       #005fa8;
       --accent-dim:   rgba(0, 95, 168, 0.3);
       --accent-muted: rgba(0, 95, 168, 0.2);
       --accent-faint: rgba(0, 95, 168, 0.06);
     }
 
-    /* Pink slide (12) → dark magenta */
-    body.light-mode #slide-12 {
+    /* Pink slide (13) → dark magenta */
+    body.light-mode #slide-13 {
       --accent:       #a0006a;
       --accent-dim:   rgba(160, 0, 106, 0.3);
       --accent-muted: rgba(160, 0, 106, 0.2);
       --accent-faint: rgba(160, 0, 106, 0.06);
     }
 
-    /* Purple slide (19) → dark violet */
-    body.light-mode #slide-19 {
+    /* Purple slide (20) → dark violet */
+    body.light-mode #slide-20 {
       --accent:       #5500bb;
       --accent-dim:   rgba(85, 0, 187, 0.3);
       --accent-muted: rgba(85, 0, 187, 0.2);
@@ -1008,7 +1059,7 @@
     <div class="statusbar">
       <span>Docker Tutorial</span>
       <span class="spacer"></span>
-      <span>Slide 01 / 19</span>
+      <span>Slide 01 / 20</span>
       <span>↑↓ Navigate</span>
     </div>
   </section>
@@ -1068,7 +1119,7 @@
     <div class="statusbar">
       <span>Agenda</span>
       <span class="spacer"></span>
-      <span>Slide 02 / 19</span>
+      <span>Slide 02 / 20</span>
       <span>↑↓ Navigate</span>
     </div>
   </section>
@@ -1081,7 +1132,8 @@
       <div class="eyebrow reveal"><span class="e-accent">Definition</span></div>
       <h2 class="slide-h2 reveal">What is <span class="g">Docker</span> and <span class="g">Container?</span></h2>
       <ul class="bullet-list reveal">
-        <li><span class="bul">▸</span><span>A way to <strong>package application</strong> with all the necessary dependencies and configurations</span></li>
+        <li><span class="bul">▸</span><span>Dockworker 🤨 - a waterfront laborer </span></li>
+        <li><span class="bul">▸</span><span>Container: A way to <strong>package application</strong> with all the necessary dependencies and configurations</span></li>
         <li><span class="bul">▸</span><span><strong>Portable artifact</strong>, easily shared and moved around</span></li>
         <li><span class="bul">▸</span><span>Makes <strong>development and deployment</strong> more efficient</span></li>
       </ul>
@@ -1124,14 +1176,108 @@
     <div class="statusbar">
       <span>What is Docker &amp; Container?</span>
       <span class="spacer"></span>
-      <span>Slide 03 / 19</span>
+      <span>Slide 03 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 04 — THE PROBLEM
+       SLIDE 04 — VM vs CONTAINERS
   ============================================== -->
-  <section class="slide" id="slide-4" aria-label="Slide 4: The Problem">
+  <section class="slide" id="slide-4" aria-label="Slide 4: VM vs Containers">
+    <div class="slide-inner">
+      <div class="eyebrow reveal"><span class="e-accent">Definition</span></div>
+      <h2 class="slide-h2 reveal">VM vs <span class="g">Containers</span></h2>
+
+      <!-- OS layer stacks side by side -->
+      <div class="reveal" style="margin-top:clamp(0.5rem,1vh,0.8rem); display:grid; grid-template-columns:1fr 1fr; gap:clamp(1rem,2vw,2rem);">
+
+        <!-- VM column -->
+        <div>
+          <div style="font-size:var(--small-size); color:#ff8c42; text-transform:uppercase; letter-spacing:0.1em; font-weight:600; margin-bottom:0.5rem;">🖥 Virtual Machine (e.g. VirtualBox)</div>
+
+          <!-- Two VMs, each with their own full OS stack -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem; margin-bottom:0.2rem;">
+            <div style="background:rgba(255,140,66,0.08); border:2px solid rgba(255,140,66,0.5); border-radius:4px; overflow:hidden;">
+              <div style="padding:0.25rem; text-align:center; font-size:var(--code-size); color:var(--text); border-bottom:1px solid rgba(255,140,66,0.2);">App A</div>
+              <div style="padding:0.25rem; text-align:center; font-size:calc(var(--code-size)*0.88); color:#ff8c42; border-bottom:1px solid rgba(255,140,66,0.2);">App Layer</div>
+              <div style="padding:0.25rem; text-align:center; font-size:calc(var(--code-size)*0.88); color:#ff8c42; background:rgba(255,140,66,0.05);">Kernel</div>
+            </div>
+            <div style="background:rgba(255,140,66,0.08); border:2px solid rgba(255,140,66,0.5); border-radius:4px; overflow:hidden;">
+              <div style="padding:0.25rem; text-align:center; font-size:var(--code-size); color:var(--text); border-bottom:1px solid rgba(255,140,66,0.2);">App B</div>
+              <div style="padding:0.25rem; text-align:center; font-size:calc(var(--code-size)*0.88); color:#ff8c42; border-bottom:1px solid rgba(255,140,66,0.2);">App Layer</div>
+              <div style="padding:0.25rem; text-align:center; font-size:calc(var(--code-size)*0.88); color:#ff8c42; background:rgba(255,140,66,0.05);">Kernel</div>
+            </div>
+          </div>
+          <div style="font-size:calc(var(--small-size)*0.9); color:#ff8c42; text-align:center; margin-bottom:0.35rem; opacity:0.75;">↑ VM virtualizes complete OS (App Layer + Kernel)</div>
+
+          <!-- Shared host infrastructure below -->
+          <div style="background:rgba(255,140,66,0.04); border:1px solid rgba(255,140,66,0.2); border-radius:4px; padding:0.3rem 0.5rem; text-align:center; font-size:var(--code-size); color:#ff8c42; margin-bottom:0.25rem;">Hypervisor</div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:0.3rem 0.5rem; text-align:center; font-size:var(--code-size); color:var(--muted); margin-bottom:0.25rem;">HOST OS</div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:4px; padding:0.25rem 0.5rem; text-align:center; font-size:var(--code-size); color:var(--muted);">Hardware</div>
+        </div>
+
+        <!-- DOCKER column -->
+        <div>
+          <div style="font-size:var(--small-size); color:var(--accent); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; margin-bottom:0.5rem;">🐳 Docker</div>
+
+          <!-- Docker image boundary: Apps + App Layer all packaged together -->
+          <div style="background:rgba(0,255,65,0.08); border:2px solid var(--green); border-radius:6px; padding:0.4rem; margin-bottom:0.2rem; box-shadow:0 0 12px rgba(0,255,65,0.15);">
+            <div style="font-size:calc(var(--small-size)*0.85); color:var(--accent); text-align:center; margin-bottom:0.3rem; letter-spacing:0.05em; opacity:0.8;">Docker Image</div>
+            <!-- Apps -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem; margin-bottom:0.3rem;">
+              <div style="background:rgba(0,255,65,0.1); border:1px solid rgba(0,255,65,0.35); border-radius:4px; padding:0.3rem; text-align:center; font-size:var(--code-size); color:var(--white);">App A</div>
+              <div style="background:rgba(0,255,65,0.1); border:1px solid rgba(0,255,65,0.35); border-radius:4px; padding:0.3rem; text-align:center; font-size:var(--code-size); color:var(--white);">App B</div>
+            </div>
+            <!-- Applications Layer -->
+            <div style="background:rgba(0,255,65,0.15); border:1px solid var(--green); border-radius:4px; padding:0.3rem 0.5rem; text-align:center; font-size:var(--code-size); color:var(--accent); font-weight:500;">
+              Applications Layer
+            </div>
+          </div>
+          <div style="font-size:calc(var(--small-size)*0.9); color:var(--accent); text-align:center; margin-bottom:0.35rem; opacity:0.75;">↑ Docker virtualizes all of this</div>
+
+          <!-- Dashed divider: below here is NOT virtualized -->
+          <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
+            <div style="flex:1; height:1px; background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 10px);"></div>
+            <span style="font-size:calc(var(--small-size)*0.85); color:var(--muted); white-space:nowrap;">uses host kernel</span>
+            <div style="flex:1; height:1px; background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 10px);"></div>
+          </div>
+
+          <!-- Kernel — shared, not virtualized -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:0.3rem 0.5rem; text-align:center; font-size:var(--code-size); color:var(--muted); margin-bottom:0.25rem;">
+            OS Kernel <span style="font-size:0.82em;">(shared)</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:4px; padding:0.25rem 0.5rem; text-align:center; font-size:var(--code-size); color:var(--muted);">Hardware</div>
+        </div>
+
+      </div>
+
+      <!-- 3 key differences -->
+      <div class="reveal" style="margin-top:clamp(0.6rem,1.2vh,1rem); display:grid; grid-template-columns:1fr 1fr 1fr; gap:clamp(0.4rem,0.8vw,0.75rem);">
+        <div style="background:var(--accent-faint); border:1px solid var(--accent-muted); border-radius:6px; padding:clamp(0.3rem,0.6vw,0.5rem) clamp(0.5rem,1vw,0.75rem); font-size:var(--small-size);">
+          <div style="color:var(--muted); margin-bottom:0.25rem; font-size:calc(var(--small-size)*0.88); text-transform:uppercase; letter-spacing:0.08em;">Size</div>
+          <span style="color:var(--accent); font-weight:600;">MBs</span> <span style="color:var(--muted);">vs</span> <span style="color:#ff8c42; font-weight:600;">GBs</span>
+        </div>
+        <div style="background:var(--accent-faint); border:1px solid var(--accent-muted); border-radius:6px; padding:clamp(0.3rem,0.6vw,0.5rem) clamp(0.5rem,1vw,0.75rem); font-size:var(--small-size);">
+          <div style="color:var(--muted); margin-bottom:0.25rem; font-size:calc(var(--small-size)*0.88); text-transform:uppercase; letter-spacing:0.08em;">Startup</div>
+          <span style="color:var(--accent); font-weight:600;">&lt; 1s</span> <span style="color:var(--muted);">vs</span> <span style="color:#ff8c42; font-weight:600;">30–60s</span>
+        </div>
+        <div style="background:var(--accent-faint); border:1px solid var(--accent-muted); border-radius:6px; padding:clamp(0.3rem,0.6vw,0.5rem) clamp(0.5rem,1vw,0.75rem); font-size:var(--small-size);">
+          <div style="color:var(--muted); margin-bottom:0.25rem; font-size:calc(var(--small-size)*0.88); text-transform:uppercase; letter-spacing:0.08em;">Kernel</div>
+          <span style="color:var(--accent); font-weight:600;">shared</span> <span style="color:var(--muted);">vs</span> <span style="color:#ff8c42; font-weight:600;">own copy</span>
+        </div>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>VM vs Containers</span>
+      <span class="spacer"></span>
+      <span>Slide 04 / 20</span>
+    </div>
+  </section>
+
+  <!-- =============================================
+       SLIDE 05 — THE PROBLEM
+  ============================================== -->
+  <section class="slide" id="slide-5" aria-label="Slide 5: The Problem">
     <div class="slide-inner" style="justify-content: center; align-items: center;">
       <div class="eyebrow reveal" style="margin-bottom: clamp(0.4rem,0.8vh,0.7rem);"><span class="e-accent">Motivation</span></div>
       <h2 class="slide-h2 reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.2rem);">Why Use Docker in <span class="g">Development?</span></h2>
@@ -1143,14 +1289,14 @@
     <div class="statusbar">
       <span>The Problem</span>
       <span class="spacer"></span>
-      <span>Slide 04 / 19</span>
+      <span>Slide 05 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 05 — WHY USE DOCKER IN DEPLOYMENT?
+       SLIDE 06 — WHY USE DOCKER IN DEPLOYMENT?
   ============================================== -->
-  <section class="slide" id="slide-5" aria-label="Slide 5: Why use Docker in Deployment">
+  <section class="slide" id="slide-6" aria-label="Slide 6: Why use Docker in Deployment">
     <div class="slide-inner" style="justify-content: center; align-items: center;">
       <div class="eyebrow reveal" style="margin-bottom: clamp(0.4rem,0.8vh,0.7rem);"><span class="e-accent">Motivation</span></div>
       <h2 class="slide-h2 reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.2rem);">Why Use Docker in <span class="g">Deployment?</span></h2>
@@ -1162,14 +1308,14 @@
     <div class="statusbar">
       <span>Why Docker?</span>
       <span class="spacer"></span>
-      <span>Slide 05 / 19</span>
+      <span>Slide 06 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 06 — DOCKER ACROSS PLATFORMS
+       SLIDE 07 — DOCKER ACROSS PLATFORMS
   ============================================== -->
-  <section class="slide" id="slide-6" aria-label="Slide 6: Docker Across Platforms">
+  <section class="slide" id="slide-7" aria-label="Slide 7: Docker Across Platforms">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Platform</span></div>
       <h2 class="slide-h2 reveal">Docker on <span class="g">Linux, Mac &amp; Windows</span></h2>
@@ -1218,14 +1364,14 @@
     <div class="statusbar">
       <span>Docker Platforms</span>
       <span class="spacer"></span>
-      <span>Slide 06 / 19</span>
+      <span>Slide 07 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 07 — TERMINOLOGY: IMAGE
+       SLIDE 08 — TERMINOLOGY: IMAGE
   ============================================== -->
-  <section class="slide" id="slide-7" aria-label="Slide 7: Image">
+  <section class="slide" id="slide-8" aria-label="Slide 8: Image">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Core Concept 01 / 04</span></div>
       <h2 class="slide-h2 reveal"><span class="g">Image</span></h2>
@@ -1254,14 +1400,14 @@
     <div class="statusbar">
       <span>Image</span>
       <span class="spacer"></span>
-      <span>Slide 07 / 19</span>
+      <span>Slide 08 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 08 — TERMINOLOGY: CONTAINER
+       SLIDE 09 — TERMINOLOGY: CONTAINER
   ============================================== -->
-  <section class="slide" id="slide-8" aria-label="Slide 8: Container">
+  <section class="slide" id="slide-9" aria-label="Slide 9: Container">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Core Concept 02 / 04</span></div>
       <h2 class="slide-h2 reveal"><span class="g">Container</span></h2>
@@ -1284,14 +1430,14 @@
     <div class="statusbar">
       <span>Container</span>
       <span class="spacer"></span>
-      <span>Slide 08 / 19</span>
+      <span>Slide 09 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 09 — TERMINOLOGY: DOCKER ENGINE
+       SLIDE 10 — TERMINOLOGY: DOCKER ENGINE
   ============================================== -->
-  <section class="slide" id="slide-9" aria-label="Slide 9: Docker Engine">
+  <section class="slide" id="slide-10" aria-label="Slide 10: Docker Engine">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Core Concept 03 / 04</span></div>
       <h2 class="slide-h2 reveal"><span class="g">Docker Engine</span></h2>
@@ -1323,14 +1469,14 @@
     <div class="statusbar">
       <span>Docker Engine</span>
       <span class="spacer"></span>
-      <span>Slide 09 / 19</span>
+      <span>Slide 10 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 10 — TERMINOLOGY: REGISTRY
+       SLIDE 11 — TERMINOLOGY: REGISTRY
   ============================================== -->
-  <section class="slide" id="slide-10" aria-label="Slide 10: Registry">
+  <section class="slide" id="slide-11" aria-label="Slide 11: Registry">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Core Concept 04 / 04</span></div>
       <h2 class="slide-h2 reveal"><span class="g">Registry</span></h2>
@@ -1366,14 +1512,14 @@
     <div class="statusbar">
       <span>Registry</span>
       <span class="spacer"></span>
-      <span>Slide 10 / 19</span>
+      <span>Slide 11 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 11 — ARCHITECTURE OVERVIEW
+       SLIDE 12 — ARCHITECTURE OVERVIEW
   ============================================== -->
-  <section class="slide" id="slide-11" aria-label="Slide 11: Architecture">
+  <section class="slide" id="slide-12" aria-label="Slide 12: Architecture">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Big Picture</span></div>
       <h2 class="slide-h2 reveal">How It All <span class="g">Fits Together</span></h2>
@@ -1398,14 +1544,14 @@
     <div class="statusbar">
       <span>Architecture</span>
       <span class="spacer"></span>
-      <span>Slide 11 / 19</span>
+      <span>Slide 12 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 12 — INSTALL DOCKER ENGINE (WSL2 CLI)
+       SLIDE 13 — INSTALL DOCKER ENGINE (WSL2 CLI)
   ============================================== -->
-  <section class="slide" id="slide-12" aria-label="Slide 12: Installation">
+  <section class="slide" id="slide-13" aria-label="Slide 13: Installation">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Setup</span></div>
       <h2 class="slide-h2 reveal">Installing Docker Engine <span class="g">via WSL2</span></h2>
@@ -1443,14 +1589,14 @@
     <div class="statusbar">
       <span>Installation</span>
       <span class="spacer"></span>
-      <span>Slide 12 / 19</span>
+      <span>Slide 13 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 13 — DEMO: PULL POSTGRESQL
+       SLIDE 14 — DEMO: PULL POSTGRESQL
   ============================================== -->
-  <section class="slide" id="slide-13" aria-label="Slide 13: Demo pull">
+  <section class="slide" id="slide-14" aria-label="Slide 14: Demo pull">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Demo — Step 1 / 3</span></div>
       <h2 class="slide-h2 reveal">Pull the <span class="g">PostgreSQL Image</span></h2>
@@ -1469,14 +1615,14 @@
     <div class="statusbar">
       <span>Demo · Pull</span>
       <span class="spacer"></span>
-      <span>Slide 13 / 19</span>
+      <span>Slide 14 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 14 — DEMO: RUN POSTGRESQL
+       SLIDE 15 — DEMO: RUN POSTGRESQL
   ============================================== -->
-  <section class="slide" id="slide-14" aria-label="Slide 14: Demo run">
+  <section class="slide" id="slide-15" aria-label="Slide 15: Demo run">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Demo — Step 2 / 3</span></div>
       <h2 class="slide-h2 reveal">Run a <span class="g">PostgreSQL Container</span></h2>
@@ -1498,14 +1644,14 @@
     <div class="statusbar">
       <span>Demo · Run</span>
       <span class="spacer"></span>
-      <span>Slide 14 / 19</span>
+      <span>Slide 15 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 15 — DEMO: VERIFY & CONNECT
+       SLIDE 16 — DEMO: VERIFY & CONNECT
   ============================================== -->
-  <section class="slide" id="slide-15" aria-label="Slide 15: Demo connect">
+  <section class="slide" id="slide-16" aria-label="Slide 16: Demo connect">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Demo — Step 3 / 3</span></div>
       <h2 class="slide-h2 reveal">Verify &amp; <span class="g">Connect</span></h2>
@@ -1538,14 +1684,14 @@
     <div class="statusbar">
       <span>Demo · Connect</span>
       <span class="spacer"></span>
-      <span>Slide 15 / 19</span>
+      <span>Slide 16 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 16 — CHALLENGE
+       SLIDE 17 — CHALLENGE
   ============================================== -->
-  <section class="slide" id="slide-16" aria-label="Slide 16: Challenge">
+  <section class="slide" id="slide-17" aria-label="Slide 17: Challenge">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Challenge</span></div>
       <h2 class="slide-h2 reveal">Let's Test Who Learned <span class="g">Docker!</span></h2>
@@ -1569,15 +1715,15 @@
     <div class="statusbar">
       <span>Challenge</span>
       <span class="spacer"></span>
-      <span>Slide 16 / 19</span>
+      <span>Slide 17 / 20</span>
       <span>Go!</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 17 — USEFUL COMMANDS
+       SLIDE 18 — USEFUL COMMANDS
   ============================================== -->
-  <section class="slide" id="slide-17" aria-label="Slide 17: Useful Commands">
+  <section class="slide" id="slide-18" aria-label="Slide 18: Useful Commands">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Reference</span></div>
       <h2 class="slide-h2 reveal">Useful <span class="g">Commands</span></h2>
@@ -1632,14 +1778,14 @@
     <div class="statusbar">
       <span>Reference · Commands</span>
       <span class="spacer"></span>
-      <span>Slide 17 / 19</span>
+      <span>Slide 18 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 18 — SUMMARY & NEXT STEPS
+       SLIDE 19 — SUMMARY & NEXT STEPS
   ============================================== -->
-  <section class="slide" id="slide-18" aria-label="Slide 18: Summary">
+  <section class="slide" id="slide-19" aria-label="Slide 19: Summary">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Wrap Up</span></div>
       <h2 class="slide-h2 reveal">Summary &amp; <span class="g">Next Steps</span></h2>
@@ -1668,16 +1814,16 @@
     <div class="statusbar">
       <span>Summary</span>
       <span class="spacer"></span>
-      <span>Slide 18 / 19</span>
+      <span>Slide 19 / 20</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 19 — REFERENCES & CREDITS
+       SLIDE 20 — REFERENCES & CREDITS
        To add a new entry: copy any <li> block and edit the text.
        In edit mode (hover top-left or press E) you can edit inline.
   ============================================== -->
-  <section class="slide" id="slide-19" aria-label="Slide 19: References">
+  <section class="slide" id="slide-20" aria-label="Slide 20: References">
     <div class="slide-inner">
       <div class="eyebrow reveal"><span class="e-accent">Credits &amp; Further Reading</span></div>
       <h2 class="slide-h2 reveal">References &amp; <span class="g">Credits</span></h2>
@@ -1718,7 +1864,7 @@
     <div class="statusbar">
       <span>References</span>
       <span class="spacer"></span>
-      <span>Slide 19 / 19</span>
+      <span>Slide 20 / 20</span>
       <span>fin.</span>
     </div>
   </section>
@@ -1750,6 +1896,8 @@
         this.slides.forEach((_, i) => {
           const dot = document.createElement('button');
           dot.className = 'nav-dot';
+          if (i === 16) dot.classList.add('nav-dot--challenge'); /* slide 17 = index 16 */
+          if (i === 7)  dot.classList.add('nav-dot--speaker');   /* slide 8  = index 7  */
           dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
           dot.textContent = i + 1;
           dot.addEventListener('click', () => this.goTo(i));

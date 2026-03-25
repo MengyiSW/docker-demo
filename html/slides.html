@@ -309,6 +309,151 @@
     .bullet-list li span { color: var(--text); }
 
     /* ===========================================
+       DIAGRAM IMAGE LAYOUT
+       Used on slides that pair text with diagrams
+    =========================================== */
+    .slide-split {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: clamp(1rem, 2.5vw, 2.5rem);
+      width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+    }
+    .slide-split .split-text {
+      flex: 1 1 52%;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .slide-split .split-imgs {
+      flex: 0 0 44%;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.4rem, 0.8vh, 0.8rem);
+      align-items: center;
+      overflow: hidden;
+      max-height: min(70vh, 540px);
+    }
+    .slide-diagram-img {
+      width: 100%;
+      max-width: 100%;
+      max-height: min(30vh, 220px);
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--green-muted);
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.07);
+    }
+
+    /* ===========================================
+       PORT SHIPPING ANIMATION — Slide 03
+       Container slides Dev → Staging → Production
+    =========================================== */
+    .port-scene {
+      position: relative;
+      height: clamp(140px, 26vh, 200px);
+      margin-top: clamp(0.8rem, 1.8vh, 1.4rem);
+      overflow: visible;
+    }
+    /* Dashed rail — sits at 55% so labels have room above, container has room below */
+    .port-rail {
+      position: absolute;
+      top: 55%;
+      left: 6%;
+      right: 6%;
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--green) 0 10px,
+        transparent 10px 20px
+      );
+      box-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+    }
+    /* Each dock: label on top, post drops down to rail */
+    .port-dock {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform: translateX(-50%);
+    }
+    .port-dock-label {
+      font-family: var(--font-mono);
+      font-size: var(--small-size);
+      color: var(--text);
+      white-space: nowrap;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      margin-bottom: clamp(4px, 0.8vh, 8px);
+    }
+    .port-dock-post {
+      flex: 1;
+      width: 3px;
+      background: var(--green);
+      box-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+    }
+    .port-dock-base {
+      width: clamp(28px, 5vw, 42px);
+      height: 24px;
+      background: var(--green);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+    }
+    /* The moving shipping container — sits below the rail at 55% */
+    .port-container {
+      position: absolute;
+      top: 55%;
+      animation: portContainerMove 8s ease-in-out infinite;
+    }
+    .port-container-box {
+      width: clamp(80px, 12vw, 110px);
+      border: 2px solid var(--green);
+      background: rgba(0, 255, 65, 0.12);
+      border-radius: 4px;
+      box-shadow: 0 0 24px rgba(0, 255, 65, 0.5), inset 0 0 12px rgba(0, 255, 65, 0.08);
+      overflow: hidden;
+      transform: translateX(-50%);
+    }
+    /* Corrugated roof panels */
+    .port-container-top {
+      display: flex;
+      height: clamp(18px, 3.5vh, 28px);
+      border-bottom: 2px solid var(--green);
+    }
+    .port-container-panel {
+      flex: 1;
+      border-right: 1px solid rgba(0, 255, 65, 0.5);
+      background: rgba(0, 255, 65, 0.06);
+    }
+    .port-container-panel:last-child { border-right: none; }
+    .port-container-label {
+      font-family: var(--font-mono);
+      font-size: calc(var(--code-size) * 0.88);
+      color: var(--green);
+      text-align: center;
+      padding: clamp(3px, 0.6vh, 6px) 2px;
+      white-space: nowrap;
+      font-weight: 500;
+      text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+    }
+    /* Move: pause at Dev → Staging → Prod → fade & snap back */
+    @keyframes portContainerMove {
+      0%   { left: 8%;  opacity: 1; }
+      15%  { left: 8%;  opacity: 1; }   /* pause at Dev */
+      30%  { left: 50%; opacity: 1; }   /* arrive Staging */
+      46%  { left: 50%; opacity: 1; }   /* pause at Staging */
+      61%  { left: 92%; opacity: 1; }   /* arrive Production */
+      80%  { left: 92%; opacity: 1; }   /* pause at Production */
+      81%  { left: 8%;  opacity: 0; }   /* instant snap back, invisible */
+      92%  { left: 8%;  opacity: 0; }   /* hold hidden */
+      100% { left: 8%;  opacity: 1; }   /* fade in at Dev again */
+    }
+
+    /* ===========================================
        CODE BLOCK
     =========================================== */
     .code-block {
@@ -929,138 +1074,90 @@
   </section>
 
   <!-- =============================================
-       SLIDE 03 — THE PROBLEM
+       SLIDE 03 — WHAT IS DOCKER AND CONTAINER?
   ============================================== -->
-  <section class="slide" id="slide-3" aria-label="Slide 3: The Problem">
+  <section class="slide" id="slide-3" aria-label="Slide 3: What is Docker and Container">
     <div class="slide-inner">
-      <div class="eyebrow reveal"><span class="e-accent">Context</span></div>
-      <h2 class="slide-h2 reveal">"Works on <span class="g">My Machine</span>"</h2>
-      <p class="subtitle reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.1rem);" data-edit>
-        Sound familiar? Inconsistent environments are the #1 source of dev friction.
-      </p>
+      <div class="eyebrow reveal"><span class="e-accent">Definition</span></div>
+      <h2 class="slide-h2 reveal">What is <span class="g">Docker</span> and <span class="g">Container?</span></h2>
       <ul class="bullet-list reveal">
-        <li><span class="bul">▸</span><span><strong>Environment drift</strong> — Dev, staging, and prod run different OS packages and library versions</span></li>
-        <li><span class="bul">▸</span><span><strong>Dependency conflicts</strong> — Python 3.8 on laptop, 3.11 in CI. Node 16 vs Node 20. You know the drill.</span></li>
-        <li><span class="bul">▸</span><span><strong>Slow onboarding</strong> — New teammates spend days configuring their local environment</span></li>
-        <li><span class="bul">▸</span><span><strong>The blame game</strong> — "It works on my machine" is not a deployment strategy</span></li>
+        <li><span class="bul">▸</span><span>A way to <strong>package application</strong> with all the necessary dependencies and configurations</span></li>
+        <li><span class="bul">▸</span><span><strong>Portable artifact</strong>, easily shared and moved around</span></li>
+        <li><span class="bul">▸</span><span>Makes <strong>development and deployment</strong> more efficient</span></li>
       </ul>
+      <!-- Shipping port animation: container moves between environments -->
+      <div class="port-scene reveal">
+        <!-- Dashed rail -->
+        <div class="port-rail"></div>
+
+        <!-- Dev stop -->
+        <div class="port-dock" style="left: 8%;">
+          <span class="port-dock-label">Dev Machine</span>
+          <div class="port-dock-base"></div>
+        </div>
+
+        <!-- Staging stop -->
+        <div class="port-dock" style="left: 50%;">
+          <span class="port-dock-label">CI / Staging</span>
+          <div class="port-dock-base"></div>
+        </div>
+
+        <!-- Production stop -->
+        <div class="port-dock" style="left: 92%;">
+          <span class="port-dock-label">Production</span>
+          <div class="port-dock-base"></div>
+        </div>
+
+        <!-- The moving container -->
+        <div class="port-container">
+          <div class="port-container-box">
+            <div class="port-container-top">
+              <div class="port-container-panel"></div>
+              <div class="port-container-panel"></div>
+              <div class="port-container-panel"></div>
+            </div>
+            <div class="port-container-label">App + Deps</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="statusbar">
-      <span>The Problem</span>
+      <span>What is Docker &amp; Container?</span>
       <span class="spacer"></span>
       <span>Slide 03 / 19</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 04 — WHAT IS DOCKER?
+       SLIDE 04 — THE PROBLEM
   ============================================== -->
-  <section class="slide" id="slide-4" aria-label="Slide 4: What is Docker">
-    <div class="slide-inner">
-      <div class="eyebrow reveal"><span class="e-accent">Definition</span></div>
-      <h2 class="slide-h2 reveal">What is <span class="g">Docker?</span></h2>
-      <p class="subtitle reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.1rem);" data-edit>
-        Docker is a platform for building, shipping, and running applications in isolated environments called <strong style="color:var(--white)">containers</strong>.
-      </p>
-      <ul class="bullet-list reveal">
-        <li><span class="bul">▸</span><span><strong>Not a virtual machine</strong> — containers share the host OS kernel, making them lightweight and fast</span></li>
-        <li><span class="bul">▸</span><span><strong>OS-level isolation</strong> — each container gets its own filesystem, network, and processes</span></li>
-      </ul>
-      <!-- VM vs Container architecture diagram -->
-      <div class="reveal" style="margin-top:clamp(0.5rem,1vh,0.75rem); display:grid; grid-template-columns:1fr 1fr; gap:clamp(0.75rem,1.5vw,1.5rem);">
-
-        <!-- VM column -->
-        <div>
-          <div style="font-size:var(--small-size); color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.4rem;">
-            <!-- Server/VM icon -->
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-              <rect x="2" y="2" width="20" height="8" rx="2" stroke="#ff8c42" stroke-width="1.5"/>
-              <rect x="2" y="14" width="20" height="8" rx="2" stroke="#ff8c42" stroke-width="1.5"/>
-              <circle cx="18" cy="6" r="1.5" fill="#ff8c42"/>
-              <circle cx="18" cy="18" r="1.5" fill="#ff8c42"/>
-              <line x1="5" y1="6" x2="13" y2="6" stroke="#ff8c42" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="5" y1="18" x2="13" y2="18" stroke="#ff8c42" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <span style="color:#ff8c42;">Virtual Machine</span>
-          </div>
-          <!-- Two VM app+guestos stacks -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem; margin-bottom:0.3rem;">
-            <div style="background:rgba(255,140,66,0.07); border:1px solid rgba(255,140,66,0.28); border-radius:4px; padding:0.2rem 0.3rem; text-align:center; font-size:var(--code-size);">
-              <div style="color:var(--text);">App A</div>
-              <div style="color:#ff8c42; font-size:0.82em; margin-top:0.1rem; border-top:1px solid rgba(255,140,66,0.2); padding-top:0.1rem;">Guest OS</div>
-            </div>
-            <div style="background:rgba(255,140,66,0.07); border:1px solid rgba(255,140,66,0.28); border-radius:4px; padding:0.2rem 0.3rem; text-align:center; font-size:var(--code-size);">
-              <div style="color:var(--text);">App B</div>
-              <div style="color:#ff8c42; font-size:0.82em; margin-top:0.1rem; border-top:1px solid rgba(255,140,66,0.2); padding-top:0.1rem;">Guest OS</div>
-            </div>
-          </div>
-          <div style="background:rgba(255,140,66,0.05); border:1px solid rgba(255,140,66,0.2); border-radius:4px; padding:0.15rem 0.4rem; text-align:center; font-size:var(--code-size); color:#ff8c42; margin-bottom:0.3rem;">Hypervisor</div>
-          <div style="background:var(--accent-faint); border:1px solid var(--accent-muted); border-radius:4px; padding:0.15rem 0.4rem; text-align:center; font-size:var(--code-size); color:var(--text); margin-bottom:0.3rem;">Host OS</div>
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:0.15rem 0.4rem; text-align:center; font-size:var(--code-size); color:var(--muted);">Hardware</div>
-        </div>
-
-        <!-- Docker column -->
-        <div>
-          <div style="font-size:var(--small-size); color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.4rem;">
-            <!-- Docker Moby Dock whale logo -->
-            <svg width="22" height="16" viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-              <path fill="#2496ED" d="M15,44 C10,44 5,40 5,33 C5,26 10,22 17,22 L70,22 C80,22 90,26 93,34 C96,42 89,49 78,49 L22,49 C18,49 15,47 15,44 Z"/>
-              <path fill="#2496ED" d="M78,22 L93,10 C95,8 97,10 96,14 L88,22 Z"/>
-              <path fill="#2496ED" d="M78,49 L93,61 C95,63 97,61 96,57 L88,49 Z"/>
-              <circle fill="white" cx="20" cy="36" r="3.5"/>
-              <circle fill="#1a6fa3" cx="20" cy="36" r="1.5"/>
-              <rect fill="white" x="29" y="11" width="12" height="9" rx="1.5"/>
-              <rect fill="white" x="43" y="11" width="12" height="9" rx="1.5"/>
-              <rect fill="white" x="57" y="11" width="12" height="9" rx="1.5"/>
-              <rect fill="white" x="29" y="2" width="12" height="9" rx="1.5" opacity="0.75"/>
-              <rect fill="white" x="43" y="2" width="12" height="9" rx="1.5" opacity="0.75"/>
-              <line x1="31" y1="11" x2="26" y2="1" stroke="#2496ED" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
-              <line x1="37" y1="11" x2="35" y2="0" stroke="#2496ED" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
-            </svg>
-            <span style="color:var(--accent);">Docker Containers</span>
-          </div>
-          <!-- Two containers (apps only, no Guest OS) -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem; margin-bottom:0.3rem;">
-            <div style="background:var(--accent-faint); border:1px solid var(--accent-muted); border-radius:4px; padding:0.2rem 0.3rem; text-align:center; font-size:var(--code-size); color:var(--text);">App A</div>
-            <div style="background:var(--accent-faint); border:1px solid var(--accent-muted); border-radius:4px; padding:0.2rem 0.3rem; text-align:center; font-size:var(--code-size); color:var(--text);">App B</div>
-          </div>
-          <div style="background:var(--accent-faint); border:1px solid var(--accent-muted); border-radius:4px; padding:0.15rem 0.4rem; text-align:center; font-size:var(--code-size); color:var(--accent); margin-bottom:0.3rem;">Docker Engine</div>
-          <div style="background:var(--accent-faint); border:2px solid var(--accent-muted); border-radius:4px; padding:0.15rem 0.4rem; text-align:center; font-size:var(--code-size); color:var(--accent); margin-bottom:0.3rem;">Host OS <span style="color:var(--muted); font-size:0.82em;">(shared kernel)</span></div>
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:0.15rem 0.4rem; text-align:center; font-size:var(--code-size); color:var(--muted);">Hardware</div>
-        </div>
-
-      </div>
-
-      <!-- Logo / name origin note -->
-      <div class="reveal" style="margin-top:clamp(0.4rem,0.8vh,0.65rem); display:flex; align-items:center; gap:0.6rem; padding:clamp(0.3rem,0.6vw,0.5rem) clamp(0.5rem,1vw,0.75rem); background:var(--accent-faint); border-left:2px solid var(--accent-muted); border-radius:0 4px 4px 0;">
-        <span style="font-size:clamp(1rem,1.8vw,1.4rem); line-height:1; flex-shrink:0;">🐋</span>
-        <span style="font-size:var(--small-size); color:var(--muted); line-height:1.5;">
-          <strong style="color:var(--text);">Why "Docker"?</strong> — Named after a <em>dock worker</em> (longshoreman) who loads shipping containers.
-          The logo is <strong style="color:var(--accent);">Moby Dock</strong>, a whale carrying containers on its back — just like Docker packages your app with everything it needs to run.
-        </span>
+  <section class="slide" id="slide-4" aria-label="Slide 4: The Problem">
+    <div class="slide-inner" style="justify-content: center; align-items: center;">
+      <div class="eyebrow reveal" style="margin-bottom: clamp(0.4rem,0.8vh,0.7rem);"><span class="e-accent">Motivation</span></div>
+      <h2 class="slide-h2 reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.2rem);">Why Use Docker in <span class="g">Development?</span></h2>
+      <div class="split-imgs reveal" style="display: flex; flex-direction: row; gap: clamp(1rem, 2vw, 2rem); max-height: min(58vh, 440px); align-items: center;">
+        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/development-before-containers.png" alt="Application development before containers">
+        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/development-after-containers.png" alt="Application development after containers">
       </div>
     </div>
     <div class="statusbar">
-      <span>What is Docker?</span>
+      <span>The Problem</span>
       <span class="spacer"></span>
       <span>Slide 04 / 19</span>
     </div>
   </section>
 
   <!-- =============================================
-       SLIDE 05 — WHY USE DOCKER?
+       SLIDE 05 — WHY USE DOCKER IN DEPLOYMENT?
   ============================================== -->
-  <section class="slide" id="slide-5" aria-label="Slide 5: Why use Docker">
-    <div class="slide-inner">
-      <div class="eyebrow reveal"><span class="e-accent">Motivation</span></div>
-      <h2 class="slide-h2 reveal">Why Use <span class="g">Docker?</span></h2>
-      <ul class="bullet-list reveal">
-        <li><span class="bul">▸</span><span><strong>Consistent environments</strong> — the container is the environment. Same behavior everywhere, always.</span></li>
-        <li><span class="bul">▸</span><span><strong>Isolation</strong> — run Postgres 14 and Postgres 16 side-by-side without conflicts</span></li>
-        <li><span class="bul">▸</span><span><strong>Reproducibility</strong> — share a <code>Dockerfile</code> and everyone gets the exact same setup</span></li>
-        <li><span class="bul">▸</span><span><strong>Faster CI/CD</strong> — build images in CI and ship the exact same artifact to production</span></li>
-        <li><span class="bul">▸</span><span><strong>Easy cleanup</strong> — done with a database? <code>docker rm</code> — it's completely gone, no residue</span></li>
-      </ul>
+  <section class="slide" id="slide-5" aria-label="Slide 5: Why use Docker in Deployment">
+    <div class="slide-inner" style="justify-content: center; align-items: center;">
+      <div class="eyebrow reveal" style="margin-bottom: clamp(0.4rem,0.8vh,0.7rem);"><span class="e-accent">Motivation</span></div>
+      <h2 class="slide-h2 reveal" style="margin-bottom: clamp(0.75rem,1.5vh,1.2rem);">Why Use Docker in <span class="g">Deployment?</span></h2>
+      <div class="split-imgs reveal" style="display: flex; flex-direction: row; gap: clamp(1rem, 2vw, 2rem); max-height: min(58vh, 440px); align-items: center;">
+        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/deployment-before-containers.png" alt="Application deployment before containers">
+        <img class="slide-diagram-img" style="max-height: min(52vh, 400px); flex: 1;" src="../assets/deployment-after-containers.png" alt="Application deployment after containers">
+      </div>
     </div>
     <div class="statusbar">
       <span>Why Docker?</span>
